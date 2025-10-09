@@ -1,23 +1,12 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-50 border-t mt-10 w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-sm text-gray-600">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 relative">
-                <Image src="/images/logo.png" alt="logo" fill sizes="40px" />
-              </div>
-              <div className="font-semibold">Bee Tech Communication OPC</div>
-            </div>
-            <div>Powered By BEETECH — www.beetc24.com</div>
-            <div className="mt-2">© {new Date().getFullYear()}</div>
-          </div>
-
+    <footer className="bg-gray-200 border-t mt-10 w-full">
+      <div className="max-w-7xl mx-auto p-4  text-sm text-gray-600">
+        <div className="flex flex-col gap-6">
           <div className="flex gap-6 flex-wrap md:flex-nowrap">
             <div>
               <h4 className="font-semibold mb-2">Informations</h4>
@@ -33,6 +22,16 @@ const Footer = () => {
                 </li>
               </ul>
             </div>
+          </div>
+          <div className="border-t border-gray-400 ">
+            <h1 className="pt-2">Powered By EASYTECH </h1>
+            <div className="  text-xs">
+              {" "}
+              Bee Tech Communication OPC© {new Date().getFullYear()}
+            </div>
+            <Link href={"https://srikanto.site"} target="_blank">
+              Made
+            </Link>
           </div>
         </div>
       </div>

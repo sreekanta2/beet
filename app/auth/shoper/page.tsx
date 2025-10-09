@@ -102,7 +102,7 @@ export default function ShopperAccount() {
   return (
     <div className="max-w-5xl mx-auto bg-white border border-gray-200 rounded-md mt-10 p-6 text-[14px] font-sans">
       {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+      <div className="flex items-center space-x-2 text-sm text-gray-600  ">
         <span className="text-blue-500 hover:underline cursor-pointer">
           🏠 Home
         </span>

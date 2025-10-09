@@ -1,5 +1,5 @@
 // types/common.ts
-export type UserRole = "user" | "admin";
+export type UserRole = "user" | "admin" | "shoper";
 
 export interface SearchParams {
   search?: string;

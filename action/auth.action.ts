@@ -9,60 +9,59 @@ import {
 } from "@/lib/actions/server-actions-response";
 import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/send-email";
-import { generateRefCode } from "@/lib/utils";
-import { RegisterSchema } from "@/zod-validation/auth";
+import { registerSchema } from "@/zod-validation/auth";
+
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 
 export async function createUser(data: unknown) {
   try {
-    const validatedData = RegisterSchema.parse(data);
-    const refCode = generateRefCode();
+    const validatedData = registerSchema.parse(data);
+    const {
+      firstName,
+      lastName,
+      country,
+      telephone,
+      reference,
+      subscribe,
+      password,
+    } = validatedData;
+
+    // Validate if email or phone already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email },
+      where: { telephone },
     });
 
     if (existingUser) {
-      throw new AppError("Email is already registered.");
+      throw new AppError("Telephone already registered.");
     }
 
-    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 1️⃣ Create user
-    const newUser = await prisma.user.create({
+    // Create referral code (example)
+    const refCode = `REF${Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase()}`;
+
+    // Create user
+    const user = await prisma.user.create({
       data: {
-        name: validatedData.name,
-        email: validatedData.email,
+        name: `${firstName} ${lastName}`,
+        telephone,
+        country,
         refCode,
-        referredBy: validatedData?.refBy,
+        referredBy: reference || null,
         password: hashedPassword,
-        emailVerified: null,
+        role: "user",
+        subscribe,
       },
-    });
-
-    // 2️⃣ Generate a 6-digit OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
-
-    // 3️⃣ Save OTP in DB with expiry (5 min example)
-    await prisma.otp.create({
-      data: {
-        email: newUser.email,
-        code: otp,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-      },
-    });
-
-    // 4️⃣ Send OTP via email
-    await sendEmail({
-      to: newUser.email,
-      subject: "Your verification code",
-      text: `Your verification code is ${otp}. It will expire in 5 minutes.`,
     });
 
     return serverActionCreatedResponse({
-      message: "User created successfully. OTP sent to email.",
-      userId: newUser.id,
+      message: "User created successfully.  ",
+      userId: user.id,
     });
   } catch (error) {
     return serverActionErrorResponse(error);
@@ -74,7 +73,7 @@ export async function deleteUserByEmail(email: string, path: string) {
       throw new AppError("Email  is required for deletion");
     }
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { telephone: email },
     });
 
     if (!existingUser) {
@@ -83,7 +82,7 @@ export async function deleteUserByEmail(email: string, path: string) {
 
     // Delete the clinic (cascades to related records)
     const user = await prisma.user.delete({
-      where: { email },
+      where: { telephone: email },
     });
 
     revalidatePath(path || "/");
@@ -112,7 +111,7 @@ export async function verifyOtp(email: string, code: string) {
       throw new AppError("OTP has expired");
     }
     await prisma.user.update({
-      where: { email },
+      where: { telephone: email },
       data: { emailVerified: new Date() },
     });
 
@@ -132,7 +131,9 @@ const generateOtp = () =>
 export async function sendOtp(email: string) {
   try {
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findUnique({
+      where: { telephone: email },
+    });
     if (!existingUser) {
       throw new AppError("Email is not found !");
     }
@@ -176,7 +177,7 @@ export async function resetPasswordAction({
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
-      where: { email },
+      where: { telephone: email },
       data: { password: hashedPassword },
     });
 

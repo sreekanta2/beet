@@ -1,245 +1,258 @@
 "use client";
+
+import { createUser } from "@/action/auth.action";
+import Breadcrumb from "@/components/breadcumb";
 import { countryList } from "@/lib/utils/utils";
-import Link from "next/link";
-import { useState } from "react";
+import { RegisterFormData, registerSchema } from "@/zod-validation/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 export default function RegisterAccount() {
-  const [formData, setFormData] = useState({
-    country: "Bangladesh",
-    reference: "",
-    firstName: "",
-    lastName: "",
-    telephone: "",
-    password: "",
-    confirmPassword: "",
-    subscribe: "no",
-    agree: false,
+  const [isPending, startTransition] = useTransition();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      country: "Bangladesh",
+      subscribe: "no",
+      agree: false,
+    },
   });
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const target = e.target;
-    const name = target.name;
 
-    // Narrow the type to HTMLInputElement for checkbox
-    const value =
-      target instanceof HTMLInputElement && target.type === "checkbox"
-        ? target.checked
-        : target.value;
-
-    setFormData({
-      ...formData,
-      [name]: value,
+  const onSubmit = (data: RegisterFormData) => {
+    startTransition(async () => {
+      try {
+        const result = await createUser(data);
+        if (result?.success) {
+          toast.success("Registration successful!  ", {
+            duration: 4000,
+          });
+        } else {
+          toast.error(
+            result?.message || "Registration failed. Please try again."
+          );
+        }
+      } catch {
+        toast.error("Network error. Please try again.");
+      }
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(formData);
-  };
-
   return (
-    <div className="max-w-5xl mx-auto bg-white border border-gray-200 rounded-md mt-10 p-6 text-[14px] font-sans">
-      {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-        <Link href="/" className="text-blue-500 hover:underline cursor-pointer">
-          🏠 Home
-        </Link>
-        <span>/</span>
-        {/* <span className="text-blue-500 hover:underline cursor-pointer">
-          Account
-        </span> */}
-        {/* <span>/</span> */}
-        <span>Register</span>
-      </div>
+    <div>
+      <Breadcrumb items={[{ label: "", href: "/" }, { label: "signup" }]} />
 
-      <h1 className="text-2xl font-semibold mb-2">Register Account</h1>
-      <p className="text-sm text-gray-600 mb-6">
-        If you already have an account with us, please{" "}
-        <a href="/login" className="text-blue-600 hover:underline">
-          login at the login page
-        </a>
-        .
-      </p>
+      <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-md mt-10 p-6 text-[14px] font-sans">
+        <h1 className="text-2xl font-semibold mb-2">Register Account</h1>
+        <p className="text-sm text-gray-600 mb-6">
+          If you already have an account with us, please{" "}
+          <a href="/login" className="text-blue-600 hover:underline">
+            login at the login page
+          </a>
+          .
+        </p>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Localization */}
-        <div>
-          <h2 className="font-semibold mb-2 text-base">Localization</h2>
-          <div className="border-t border-gray-200 pt-3">
-            <label className="block mb-1 font-medium">
-              <span className="text-red-500">*</span> Country
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Localization */}
+          <div>
+            <h2 className="font-semibold mb-2 text-base">Localization</h2>
+            <div className="border-t border-gray-200 pt-3">
+              <label className="block mb-1 font-medium">
+                <span className="text-red-500">*</span> Country
+              </label>
+              <select
+                {...register("country")}
+                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+              >
+                {countryList.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+              {errors.country && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.country.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Reference */}
+          <div>
+            <h2 className="font-semibold mb-2 text-base">Your Reference</h2>
+            <div className="border-t border-gray-200 pt-3">
+              <input
+                type="text"
+                placeholder="Reference"
+                {...register("reference")}
+                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Personal Details */}
+          <div>
+            <h2 className="font-semibold mb-2 text-base">
+              Your Personal Details
+            </h2>
+            <div className="border-t border-gray-200 pt-3 space-y-4">
+              <div>
+                <label className="block mb-1 font-medium">
+                  <span className="text-red-500">*</span> First Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  {...register("firstName")}
+                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.firstName.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium">
+                  <span className="text-red-500">*</span> Last Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  {...register("lastName")}
+                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.lastName.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium">
+                  <span className="text-red-500">*</span> Telephone
+                </label>
+                <input
+                  type="tel"
+                  placeholder="Telephone"
+                  {...register("telephone")}
+                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+                />
+                {errors.telephone && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.telephone.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <h2 className="font-semibold mb-2 text-base">Your Password</h2>
+            <div className="border-t border-gray-200 pt-3 space-y-4">
+              <div>
+                <label className="block mb-1 font-medium">
+                  <span className="text-red-500">*</span> Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  {...register("password")}
+                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium">
+                  <span className="text-red-500">*</span> Password Confirm
+                </label>
+                <input
+                  type="password"
+                  placeholder="Password Confirm"
+                  {...register("confirmPassword")}
+                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h2 className="font-semibold mb-2 text-base">Newsletter</h2>
+            <div className="border-t border-gray-200 pt-3 flex items-center space-x-6">
+              <span>Subscribe</span>
+              <label className="flex items-center space-x-1">
+                <input
+                  type="radio"
+                  value="yes"
+                  {...register("subscribe")}
+                  className="accent-blue-600"
+                />
+                <span>Yes</span>
+              </label>
+              <label className="flex items-center space-x-1">
+                <input
+                  type="radio"
+                  value="no"
+                  {...register("subscribe")}
+                  className="accent-blue-600"
+                />
+                <span>No</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Agreement and Button */}
+          <div className="flex flex-col md:flex-row justify-between items-center border-t border-gray-200 pt-3">
+            <label className="flex items-center text-sm space-x-2 mb-3 md:mb-0">
+              <input
+                type="checkbox"
+                {...register("agree")}
+                className="accent-blue-600"
+              />
+              <span>
+                I have read and agree to the{" "}
+                <a href="#" className="text-blue-600 hover:underline">
+                  Privacy Policy
+                </a>
+              </span>
             </label>
-            <select
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+            {errors.agree && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.agree.message}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="bg-[#1E90FF] text-white px-5 py-2 rounded-sm hover:bg-blue-700 text-sm disabled:opacity-50"
             >
-              {countryList.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
+              {isPending ? "Submitting..." : "Continue"}
+            </button>
           </div>
-        </div>
-
-        {/* Reference */}
-        <div>
-          <h2 className="font-semibold mb-2 text-base">Your Reference</h2>
-          <div className="border-t border-gray-200 pt-3">
-            <input
-              type="text"
-              name="reference"
-              placeholder="Reference"
-              value={formData.reference}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Personal Details */}
-        <div>
-          <h2 className="font-semibold mb-2 text-base">
-            Your Personal Details
-          </h2>
-          <div className="border-t border-gray-200 pt-3 space-y-4">
-            <div>
-              <label className="block mb-1 font-medium">
-                <span className="text-red-500">*</span> First Name
-              </label>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium">
-                <span className="text-red-500">*</span> Last Name
-              </label>
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium">
-                <span className="text-red-500">*</span> Telephone
-              </label>
-              <input
-                type="tel"
-                name="telephone"
-                placeholder="Telephone"
-                value={formData.telephone}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Password */}
-        <div>
-          <h2 className="font-semibold mb-2 text-base">Your Password</h2>
-          <div className="border-t border-gray-200 pt-3 space-y-4">
-            <div>
-              <label className="block mb-1 font-medium">
-                <span className="text-red-500">*</span> Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium">
-                <span className="text-red-500">*</span> Password Confirm
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Password Confirm"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Newsletter */}
-        <div>
-          <h2 className="font-semibold mb-2 text-base">Newsletter</h2>
-          <div className="border-t border-gray-200 pt-3 flex items-center space-x-6">
-            <span>Subscribe</span>
-            <label className="flex items-center space-x-1">
-              <input
-                type="radio"
-                name="subscribe"
-                value="yes"
-                checked={formData.subscribe === "yes"}
-                onChange={handleChange}
-                className="accent-blue-600"
-              />
-              <span>Yes</span>
-            </label>
-            <label className="flex items-center space-x-1">
-              <input
-                type="radio"
-                name="subscribe"
-                value="no"
-                checked={formData.subscribe === "no"}
-                onChange={handleChange}
-                className="accent-blue-600"
-              />
-              <span>No</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Agreement and Button */}
-        <div className="flex flex-col md:flex-row justify-between items-center border-t border-gray-200 pt-3">
-          <label className="flex items-center text-sm space-x-2 mb-3 md:mb-0">
-            <input
-              type="checkbox"
-              name="agree"
-              checked={formData.agree}
-              onChange={handleChange}
-              className="accent-blue-600"
-            />
-            <span>
-              I have read and agree to the{" "}
-              <a href="#" className="text-blue-600 hover:underline">
-                Privacy Policy
-              </a>
-            </span>
-          </label>
-
-          <button
-            type="submit"
-            className="bg-[#1E90FF] text-white px-5 py-2 rounded-sm hover:bg-blue-700 text-sm"
-          >
-            Continue
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

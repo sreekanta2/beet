@@ -1,5 +1,6 @@
 "use client";
 import { ChevronRight, Home } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 interface BreadcrumbProps {
@@ -7,9 +8,12 @@ interface BreadcrumbProps {
 }
 
 export default function Breadcrumb({ items }: BreadcrumbProps) {
+  const { data: session } = useSession();
+  const role = session?.user?.role;
+  const dashboardLink = role ? `/${role}/dashboard` : "/";
   return (
     <nav
-      className="w-full max-w-4xl mx-auto border border-gray-300 bg-gray-100 rounded mt-4"
+      className="w-full max-w-4xl mx-auto border border-gray-300 bg-gray-100 rounded my-4"
       aria-label="Breadcrumb"
     >
       <ol className="flex items-center px-4   text-sm">
@@ -17,7 +21,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
           <li key={index} className="flex items-center">
             {index === 0 && (
               <Link
-                href={item.href || "/"}
+                href={dashboardLink}
                 className="text-blue-600 hover:underline flex items-center gap-1 font-normal"
               >
                 <Home size={14} strokeWidth={2} />

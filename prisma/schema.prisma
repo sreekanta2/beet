@@ -9,172 +9,23 @@ datasource db {
 }
 
 model User {
-  id               String           @id @default(cuid())
-  name             String
-  email            String           @unique
-  image            String?
-  refCode          String           @unique
-  referredBy       String?
-  emailVerified    DateTime?
-  role             String           @default("user")
-  password         String
-  totalEarnings    Float            @default(0)
-  totalWithdrawals Float            @default(0)
-  totalDeposits    Float            @default(0)
-  refBonusEarned   Float            @default(0)
-  pendingAmount    Float            @default(0)
-  orders           Order[]
-  paymentRequests  PaymentRequest[]
-  accounts         Account[]
-  sessions         Session[]
-  adView           AdView[]
-  transaction      Transaction[]
+  id   String @id @default(cuid())
+  name String
 
-  // Referral relations
-  referralsMade Referral[] @relation("ReferrerReferrals")
-  referralsGot  Referral[] @relation("ReferredReferrals")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Referral {
-  id         String   @id @default(cuid())
-  referrerId String
-  referredId String
-  bonus      Float
-  rewarded   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-
-  referrer User @relation("ReferrerReferrals", fields: [referrerId], references: [id])
-  referred User @relation("ReferredReferrals", fields: [referredId], references: [id])
-
-  @@index([referrerId])
-  @@index([referredId])
-}
-
-// Packages
-model Package {
-  id            String   @id @default(cuid())
-  name          String
-  description   String?
   image         String?
-  price         Float
-  initialEarn   Float    @default(0)
-  adLimit       Int      @default(5)
-  rewardPerAd   Float    @default(1)
-  totalEarnings Float    @default(0)
-  orders        Order[]
-  adView        AdView[]
+  refCode       String    @unique
+  referredBy    String?
+  country       String?
+  emailVerified DateTime?
+  subscribe     String    @default("no")
+  agree         Boolean   @default(false)
+  telephone     String    @unique
+  role          String    @default("user")
+  password      String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+  accounts Account[]
+  sessions Session[]
 
-// Orders (user purchases)
-model Order {
-  id           String   @id @default(cuid())
-  userId       String
-  packageId    String
-  numOfPur     Int      @default(0)
-  pendingOrder Int      @default(0)
-  status       String   @default("paid")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([packageId])
-}
-
-model Transaction {
-  id String @id @default(cuid())
-
-  userId   String
-  type     String
-  amount   Float
-  bankName String
-
-  number    String?
-  purl      String?
-  trnId     String
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // One-to-one relation with MobileNumbers
-  mobileNumberId String?        @unique
-  mobileNumber   MobileNumbers? @relation(fields: [mobileNumberId], references: [id])
-
-  @@unique([userId, trnId])
-  @@index([userId])
-  @@index([mobileNumberId])
-}
-
-// Ads (global)
-model Ad {
-  id        String   @id @default(cuid())
-  name      String?
-  url       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model MobileNumbers {
-  id        String   @id @default(cuid())
-  number    String
-  type      String
-  bankName  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  transaction Transaction?
-}
-
-// Track watched ads
-model AdView {
-  id         String  @id @default(cuid())
-  userId     String
-  packageId  String
-  viewAd     Int     @default(0)
-  maxViewAdd Int     @default(0)
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package    Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([userId, packageId])
-  @@index([userId])
-  @@index([packageId])
-}
-
-// Transactions
-
-// Payment requests
-model PaymentRequest {
-  id        String   @id @default(cuid())
-  userId    String
-  amount    Float
-  number    String
-  status    String   @default("pending")
-  type      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Banner {
-  id        String   @id @default(cuid())
-  name      String?
-  url       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

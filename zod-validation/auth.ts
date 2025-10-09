@@ -5,31 +5,30 @@ export const LoginSchema = z.object({
   password: z.string({ required_error: "Please enter your password" }),
 });
 
-export const RegisterSchema = z
+// ✅ Define Zod Schema
+export const registerSchema = z
   .object({
-    name: z
+    country: z.string().min(1, "Country is required"),
+    reference: z.string().optional(),
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    telephone: z
       .string()
-      .min(3, {
-        message: "First Name is required .",
-      })
-      .trim(),
-
-    email: z.string().email({ message: "Your email is invalid." }).trim(),
-    password: z.string().min(6, { message: "Password must 6 characters ." }),
-    refBy: z.string().optional(),
-    confirmPassword: z.string().min(6, {
-      message: "Confirm Password must 6 characters .",
+      .min(6, "Telephone must be at least 6 digits")
+      .regex(/^[0-9+\-\s()]+$/, "Invalid telephone number"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(6, "Please confirm your password"),
+    subscribe: z.enum(["yes", "no"]).default("no"),
+    agree: z.boolean().refine((v) => v === true, {
+      message: "You must agree to the Privacy Policy",
     }),
   })
-  .superRefine(({ password, confirmPassword }, ctx) => {
-    if (password !== confirmPassword) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["confirmPassword"],
-        message: "Passwords do not match.",
-      });
-    }
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
   });
+
+export type RegisterFormData = z.infer<typeof registerSchema>;
 export const EmailSchema = z.object({
   email: z.string().email("Enter a valid email"),
 });

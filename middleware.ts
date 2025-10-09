@@ -4,10 +4,11 @@ import { UserRole } from "./types/common";
 
 const DASHBOARDS: Record<UserRole, string> = {
   user: "/user/dashboard",
+  shoper: "/shoper/dashboard",
   admin: "/admin/dashboard",
 };
 
-const PROTECTED_ROUTE_PATTERNS = ["/user/", "/admin/"];
+const PROTECTED_ROUTE_PATTERNS = ["/user/", "/shoper", "/admin/"];
 
 const isProtectedRoute = (pathname: string) =>
   PROTECTED_ROUTE_PATTERNS.some((route) => pathname.startsWith(route));
@@ -50,6 +51,11 @@ export async function middleware(req: NextRequest) {
       );
     }
 
+    if (pathname.startsWith("/shoper") && token.role !== "shoper") {
+      return NextResponse.redirect(
+        new URL(DASHBOARDS[token.role as UserRole], req.url)
+      );
+    }
     if (pathname.startsWith("/admin") && token.role !== "admin") {
       return NextResponse.redirect(
         new URL(DASHBOARDS[token.role as UserRole], req.url)
