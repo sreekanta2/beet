@@ -86,29 +86,17 @@ export default function AccountDashboard() {
           >
             <Key size={24} /> Change Password
           </Button>
-          <Button
-            onClick={() => handleRoute("/user/change-password")}
-            className="bg-primary  w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
-          >
-            <CreditCardIcon size={24} /> Card Registration
-          </Button>
-          <Button
-            onClick={() => handleRoute("/user/change-password")}
-            className="bg-primary   w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
-          >
-            <DollarSign size={24} /> Upay
-          </Button>
         </div>
         <h1 className="text-xl  mt-4">Team:</h1>
         <div className=" grid grid-cols-2 md:grid-cols-4  gap-4">
           <Button
-            onClick={() => handleRoute("/user/change-password")}
+            onClick={() => handleRoute("/user/card-registration")}
             className="bg-primary  w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
           >
             <CreditCardIcon size={24} /> Card Registration
           </Button>
           <Button
-            onClick={() => handleRoute("/user/change-password")}
+            onClick={() => handleRoute("/user/upay")}
             className="bg-primary   w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
           >
             <DollarSign size={24} /> Upay
