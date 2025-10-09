@@ -273,7 +273,7 @@ const RenderInput = ({
                     <img
                       src={preview}
                       alt="Profile preview"
-                      className="w-full h-full object-cover"
+                      className="w-full h-48 object-cover"
                     />
                   ) : (
                     <div className="flex flex-col items-center text-gray-400 p-4">

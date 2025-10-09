@@ -54,12 +54,7 @@ export default function Header() {
             >
               <LogIn size={16} /> Login
             </Button>
-            <Button
-              onClick={() => handleRoute("/auth/sign-in")}
-              className="bg-[#1e96c8] hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-            >
-              <LogIn size={16} /> Login Co-Ordinator
-            </Button>
+
             <Button className="bg-[#1e96c8] hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm">
               <Video size={16} /> Watch Video Tutorial
             </Button>
@@ -86,10 +81,11 @@ export default function Header() {
       <div className="bg-background">
         <div className="container flex items-center justify-between py-4 px-4 md:px-0">
           <div
-            className="font-bold text-xl cursor-pointer"
+            className="font-medium text-5xl md:text-4xl cursor-pointer "
             onClick={() => handleRoute("/")}
           >
-            EASYTECH
+            <span className="text-[#ff4800]">E</span>ASY
+            <span className="text-[#ff4800]">T</span>ECH
           </div>
 
           {/* Mobile Menu Toggle */}

@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/table";
 import { getAllUsers } from "@/config/users";
 import { demoUsers, User } from "@/lib/utils/data";
-// Example
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -28,31 +27,36 @@ export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [filterId, setFilterId] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [points, setPoints] = useState(0);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [points, setPoints] = useState<number>(0);
+  const [openDialog, setOpenDialog] = useState<null | "deposit" | "withdraw">(
+    null
+  );
 
   useEffect(() => {
     fetchUsers();
   }, []);
-  console.log(users);
+
   const fetchUsers = async () => {
-    const data = await getAllUsers(); // Fetch all users from API
+    const data = await getAllUsers(); // Example API call
     setUsers(demoUsers);
   };
 
-  const filteredUsers = users.filter((user) => user.id.includes(filterId));
+  const filteredUsers = users.filter((user) =>
+    user.id.toLowerCase().includes(filterId.toLowerCase())
+  );
 
-  const handleSendPoints = async () => {
+  const handleSendPoints = (type: "deposit" | "withdraw") => {
     if (!selectedUser) return;
-    try {
-      //   await sendPointsToUser(selectedUser.id, points);
-      toast.success(`Sent ${points} points to ${selectedUser.name}`);
-      setIsDialogOpen(false);
-      setPoints(0);
-      fetchUsers(); // Refresh table
-    } catch {
-      toast.error("Failed to send points");
-    }
+    const action = type === "deposit" ? "Deposited" : "Withdrawn";
+
+    toast.success(
+      `${action} ${points} points ${type === "deposit" ? "to" : "from"} ${
+        selectedUser.name
+      }`
+    );
+
+    setOpenDialog(null);
+    setPoints(0);
   };
 
   return (
@@ -72,50 +76,100 @@ export default function AdminPage() {
       {/* Users Table */}
       <Table className="border">
         <TableHeader>
-          <TableRow className="text-xs">
-            <TableHead className="text-xs">ID</TableHead>
-            <TableHead className="text-xs">Name</TableHead>
-            <TableHead className="text-xs">Email</TableHead>
-            <TableHead className="text-xs">Telephone</TableHead>
-            <TableHead className="text-xs">Points</TableHead>
-            <TableHead className="text-xs">Action</TableHead>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Telephone</TableHead>
+            <TableHead>Points</TableHead>
+            <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {demoUsers.map((user) => (
-            <TableRow key={user.id} className="text-xs">
-              <TableCell className="text-xs">{user.id}</TableCell>
-              <TableCell className="text-xs">{user.name}</TableCell>
-              <TableCell className="text-xs">{user.email}</TableCell>
-              <TableCell className="text-xs">{user.telephone}</TableCell>
-              <TableCell className="text-xs">{user.points}</TableCell>
-              <TableCell className="text-xs">
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <TableRow key={user.id}>
+              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.telephone}</TableCell>
+              <TableCell>{user.points}</TableCell>
+              <TableCell className="flex gap-2">
+                {/* Deposit Dialog */}
+                <Dialog
+                  open={
+                    openDialog === "deposit" && selectedUser?.id === user.id
+                  }
+                  onOpenChange={(isOpen) =>
+                    setOpenDialog(isOpen ? "deposit" : null)
+                  }
+                >
                   <DialogTrigger asChild>
                     <Button
                       size="sm"
-                      className="text-xs"
                       onClick={() => setSelectedUser(user)}
+                      className="bg-green-600 hover:bg-green-700 text-white"
                     >
-                      Send Points
+                      Deposit
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
                       <DialogTitle>
-                        Send Points to {selectedUser?.name}
+                        Deposit Points to {selectedUser?.name}
                       </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 mt-2">
                       <Input
                         type="number"
-                        placeholder="Points"
+                        placeholder="Enter points to deposit"
                         value={points}
                         onChange={(e) => setPoints(Number(e.target.value))}
                       />
                     </div>
                     <DialogFooter>
-                      <Button onClick={handleSendPoints}>Send</Button>
+                      <Button onClick={() => handleSendPoints("deposit")}>
+                        Send
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Withdraw Dialog */}
+                <Dialog
+                  open={
+                    openDialog === "withdraw" && selectedUser?.id === user.id
+                  }
+                  onOpenChange={(isOpen) =>
+                    setOpenDialog(isOpen ? "withdraw" : null)
+                  }
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      onClick={() => setSelectedUser(user)}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Withdraw
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                      <DialogTitle>
+                        Withdraw Points from {selectedUser?.name}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-2">
+                      <Input
+                        type="number"
+                        placeholder="Enter points to withdraw"
+                        value={points}
+                        onChange={(e) => setPoints(Number(e.target.value))}
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => handleSendPoints("withdraw")}>
+                        Withdraw
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>

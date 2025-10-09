@@ -8,7 +8,9 @@ import {
   DollarSign,
   FileText,
   Key,
+  Share,
   User,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -32,12 +34,20 @@ export default function AccountDashboard() {
         </div>
         <div className="flex justify-between items-center mb-6">
           <Card className="w-32 border border-gray-300 shadow-none">
-            <CardContent className="p-3 text-center">
+            <CardContent className="p-3 text-center leading-none">
               <p className="text-gray-600 text-sm font-medium "> ID</p>
               ...........................
               <p className="text-2xl font-bold text-primary">11749</p>
             </CardContent>
           </Card>
+          <Button
+            onClick={() => handleRoute("/user/units")}
+            size="xs"
+            className="bg-primary max-w-[200px] w-full  text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
+          >
+            <Banknote size={24} />
+            <span>Units</span>
+          </Button>
         </div>
         <div className="block md:hidden space-y-6  my-6">
           <div className="border bg-primary p-2 rounded-md">
@@ -61,7 +71,7 @@ export default function AccountDashboard() {
 
         <div className=" grid grid-cols-2 md:grid-cols-4  gap-4">
           <Button
-            onClick={() => handleRoute("#")}
+            onClick={() => handleRoute("/user/balance")}
             size="xs"
             className="bg-primary  w-full  text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
           >
@@ -86,9 +96,7 @@ export default function AccountDashboard() {
           >
             <Key size={24} /> Change Password
           </Button>
-        </div>
-        <h1 className="text-xl  mt-4">Team:</h1>
-        <div className=" grid grid-cols-2 md:grid-cols-4  gap-4">
+
           <Button
             onClick={() => handleRoute("/user/card-registration")}
             className="bg-primary  w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
@@ -100,6 +108,18 @@ export default function AccountDashboard() {
             className="bg-primary   w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
           >
             <DollarSign size={24} /> Upay
+          </Button>
+        </div>
+        <h1 className="text-xl  mt-4">Team:</h1>
+        <div className=" grid grid-cols-2 md:grid-cols-4  gap-4">
+          <Button
+            onClick={() => handleRoute("/user/team")}
+            className="bg-primary  w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2"
+          >
+            <Users size={24} /> Teams
+          </Button>
+          <Button className="bg-primary   w-full    text-white py-2 text-xs rounded-md flex flex-col h-full items-center justify-center gap-2">
+            <Share size={24} /> Share
           </Button>
         </div>
       </div>

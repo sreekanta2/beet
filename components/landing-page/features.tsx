@@ -34,7 +34,7 @@ export default function AboutBeetech() {
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto text-center mb-8">
         <h2 className="text-3xl font-semibold text-gray-800">
-          More about BEETECH
+          More about EASYTECH
         </h2>
       </div>
 
