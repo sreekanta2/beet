@@ -17,6 +17,7 @@ export async function GET(
       createdAt: true,
       teamIncome: true,
       clubsBonus: true,
+      deposit: true,
     },
   });
 

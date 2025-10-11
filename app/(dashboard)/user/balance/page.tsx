@@ -75,9 +75,7 @@ export default function PointsDashboard() {
         <div className="flex items-center justify-between md:justify-start md:gap-28">
           <h1 className="text-xl font-semibold">
             My Point:{" "}
-            <span className="font-bold text-gray-800">
-              {displayBalance.toFixed(6)}
-            </span>
+            <span className="font-bold text-gray-800">{user.deposit}</span>
           </h1>
           <button className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-4 py-2 rounded">
             Team Point
