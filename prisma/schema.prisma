@@ -1,3 +1,4 @@
+// --- Configuration ---
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,29 +9,122 @@ datasource db {
   relationMode = "prisma"
 }
 
+// --- Enums ---
+
+enum Role {
+  user
+  shoper
+  admin
+}
+
+enum BadgeLevel {
+  NONE
+  SILVER
+  GOLDEN
+  DIAMOND
+}
+
+enum TransactionType {
+  MANUAL
+  CLUB_CREATION_SPEND
+  REFERRAL_TEAM_INCOME
+  REFERRAL_CLUB_INCOME
+  REFERRAL_SIGNUP_BONUS
+  CLUB_BONUS
+  ROYALTY_DAILY
+  TRANSFER_IN
+  SHOPER_FEE_EARNED
+  TRANSFER_OUT
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// --- Core Models ---
+
 model User {
-  id   String @id @default(cuid())
-  name String
-
-  image         String?
-  refCode       String    @unique
-  referredBy    String?
-  country       String?
+  id            String    @id @default(cuid())
+  name          String?
+  telephone     String?   @unique
+  password      String?
+  referralCode  String?   @unique
+  role          Role      @default(user)
   emailVerified DateTime?
-  subscribe     String    @default("no")
-  agree         Boolean   @default(false)
-  telephone     String    @unique
-  role          String    @default("user")
-  password      String
+  serialNumber  Int       @default(autoincrement())
+  // Self-relation (Referrals)
+  referredById  String?
+  referredBy    User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  referrals     User[]    @relation("UserReferrals")
 
+  deposit          Int        @default(0)
+  teamIncome       Int        @default(0)
+  clubsIncome      Int        @default(0)
+  clubsBonus       Int        @default(0)
+  royaltyIncome    Int        @default(0)
+  totalBalance     Int        @default(0)
+  cachedClubsCount Int        @default(0)
+  badgeLevel       BadgeLevel @default(NONE)
+
+  // Relations
+  pointTransactions PointTransaction[]
+  clubs             Club[]
+
+  // Auth
   accounts Account[]
   sessions Session[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([referredById])
+  @@index([role])
 }
 
-// Accounts for auth
+model Club {
+  id           String   @id @default(cuid())
+  serialNumber Int      @default(0)
+  source       String?
+  ownerId      String
+  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  bonusAmount  String?
+  createdAt    DateTime @default(now())
+
+  clubsBonus ClubsBonus[]
+
+  @@index([ownerId])
+}
+
+model PointTransaction {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount    Int
+  type      TransactionType
+  meta      Json?
+  createdAt DateTime        @default(now())
+
+  @@index([userId])
+  @@index([type])
+}
+
+model ClubsBonus {
+  id String @id @default(cuid())
+
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  amount    Int
+  status    String
+  createdAt DateTime @default(now())
+
+  @@index([clubId])
+}
+
+// --- Auth Models ---
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -51,7 +145,6 @@ model Account {
   @@index([userId])
 }
 
-// Sessions
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -62,11 +155,12 @@ model Session {
   @@index([userId])
 }
 
-// OTPs for verification
 model Otp {
   id        String   @id @default(cuid())
   email     String
   code      String
   createdAt DateTime @default(now())
   expiresAt DateTime
+
+  @@unique([email, code])
 }

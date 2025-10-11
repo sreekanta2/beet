@@ -1,4 +1,4 @@
-import { getUserByEmail } from "@/config/user/uer-api.config";
+import { getUserByTelephone } from "@/config/user/uer-api.config";
 import prisma from "@/lib/db";
 import { UserRole } from "@/types/common";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -15,8 +15,8 @@ export const authOptions: NextAuthOptions = {
       id: "credentials",
       name: "Credentials",
       credentials: {
-        email: {
-          label: "Email or Telephone",
+        telephone: {
+          label: " Telephone",
           type: "text",
           placeholder: "your@email.com or 015XXXXXXXX",
         },
@@ -28,39 +28,37 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error("Email/Telephone and password are required");
+          if (!credentials?.telephone || !credentials?.password) {
+            throw new Error("Telephone and password are required");
           }
 
-          const { email, password } = credentials;
+          const { telephone, password } = credentials;
 
-          // Determine if input is email or telephone
-          const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-          let foundUser = null;
-
-          foundUser = await getUserByEmail(email);
+          const foundUser = await getUserByTelephone(telephone);
 
           if (!foundUser) {
             throw new Error("User not found");
           }
 
-          // Compare hashed password
+          // ✅ Ensure password exists before comparing
+          if (!foundUser.password) {
+            throw new Error("Invalid credentials");
+          }
+
           const passwordValid = await bcrypt.compare(
             password,
             foundUser.password
           );
+
           if (!passwordValid) {
             throw new Error("Invalid credentials");
           }
 
-          // Return user object for NextAuth
           return {
             id: foundUser.id,
-
             name: foundUser.name,
             telephone: foundUser.telephone,
             role: foundUser.role,
-            image: foundUser.image,
           } as User;
         } catch (error) {
           console.error("Authorization error:", error);

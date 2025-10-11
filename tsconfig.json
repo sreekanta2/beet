@@ -43,7 +43,8 @@
     "components/ui/input.tsx",
     "components/dasboard-select.jsx",
     "components/ui/tabs.jsx",
-    "components/ui/slider.jsx"
+    "components/ui/slider.jsx",
+    "index.js"
   ],
   "exclude": ["node_modules"]
 }

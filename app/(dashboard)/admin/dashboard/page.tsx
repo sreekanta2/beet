@@ -19,7 +19,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getAllUsers } from "@/config/users";
-import { demoUsers, User } from "@/lib/utils/data";
+import { User } from "@prisma/client";
+
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -37,23 +38,30 @@ export default function AdminPage() {
   }, []);
 
   const fetchUsers = async () => {
-    const data = await getAllUsers(); // Example API call
-    setUsers(demoUsers);
+    const data = await getAllUsers();
+
+    setUsers(data?.data);
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.id.toLowerCase().includes(filterId.toLowerCase())
-  );
-
-  const handleSendPoints = (type: "deposit" | "withdraw") => {
+  const handleSendPoints = async (type: "deposit" | "withdraw") => {
     if (!selectedUser) return;
     const action = type === "deposit" ? "Deposited" : "Withdrawn";
-
-    toast.success(
-      `${action} ${points} points ${type === "deposit" ? "to" : "from"} ${
-        selectedUser.name
-      }`
-    );
+    if (type === "deposit") {
+      const result = await fetch("/api/earn", {
+        method: "POST",
+        body: JSON.stringify({ userId: selectedUser?.id, earned: points }),
+      });
+      const data = await result.json();
+      if (data.success) {
+        toast.success(
+          `${action} ${points} points ${type === "deposit" ? "to" : "from"} ${
+            selectedUser.name
+          }`
+        );
+      } else {
+        toast.error(data?.message);
+      }
+    }
 
     setOpenDialog(null);
     setPoints(0);
@@ -77,22 +85,22 @@ export default function AdminPage() {
       <Table className="border">
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Telephone</TableHead>
-            <TableHead>Points</TableHead>
-            <TableHead>Action</TableHead>
+            <TableHead className="text-xs">SN</TableHead>
+            <TableHead className="text-xs">Name</TableHead>
+            <TableHead className="text-xs">Telephone</TableHead>
+            <TableHead className="text-xs">Points</TableHead>
+
+            <TableHead className="text-xs">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {demoUsers.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.id}</TableCell>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.telephone}</TableCell>
-              <TableCell>{user.points}</TableCell>
+          {users.map((user) => (
+            <TableRow key={user.id} className="text-xs">
+              <TableCell className="text-xs">{user.serialNumber}</TableCell>
+              <TableCell className="text-xs">{user.name}</TableCell>
+
+              <TableCell className="text-xs">{user.telephone}</TableCell>
+              <TableCell className="text-xs">{user.deposit}</TableCell>
               <TableCell className="flex gap-2">
                 {/* Deposit Dialog */}
                 <Dialog
@@ -105,9 +113,9 @@ export default function AdminPage() {
                 >
                   <DialogTrigger asChild>
                     <Button
-                      size="sm"
+                      size="xs"
                       onClick={() => setSelectedUser(user)}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs"
                     >
                       Deposit
                     </Button>
@@ -145,9 +153,9 @@ export default function AdminPage() {
                 >
                   <DialogTrigger asChild>
                     <Button
-                      size="sm"
+                      size="xs"
                       onClick={() => setSelectedUser(user)}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs"
                     >
                       Withdraw
                     </Button>

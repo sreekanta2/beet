@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 
 const LoginSchema = z.object({
-  identifier: z.string().min(3, "Email or Telephone is required").trim(),
+  telephone: z.string().min(3, " Telephone is required").trim(),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -25,7 +25,7 @@ export default function LoginForm() {
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      identifier: "",
+      telephone: "",
       password: "",
     },
   });
@@ -35,7 +35,7 @@ export default function LoginForm() {
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        email: values.identifier, // identifier can be email or phone
+        telephone: values.telephone, // identifier can be email or phone
         password: values.password,
         callbackUrl: callbackUrl || undefined,
       });
@@ -76,13 +76,13 @@ export default function LoginForm() {
               </label>
               <input
                 type="text"
-                {...form.register("identifier")}
+                {...form.register("telephone")}
                 placeholder="Telephone / E-Mail Address"
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
-              {form.formState.errors.identifier && (
+              {form.formState.errors.telephone && (
                 <p className="text-sm text-red-500 mt-1">
-                  {form.formState.errors.identifier.message}
+                  {form.formState.errors.telephone.message}
                 </p>
               )}
             </div>

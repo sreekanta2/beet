@@ -46,7 +46,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".contentlayer/generated"
+    ".contentlayer/generated",
+    "index.js"
   ],
   "exclude": ["node_modules"]
 }

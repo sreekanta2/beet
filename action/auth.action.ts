@@ -1,4 +1,3 @@
-// actions/user.ts
 "use server";
 
 import { AppError } from "@/lib/actions/actions-error-response";
@@ -10,63 +9,96 @@ import {
 import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/send-email";
 import { registerSchema } from "@/zod-validation/auth";
-
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 
+// ✅ Create User with Optional Referral
 export async function createUser(data: unknown) {
   try {
+    // 1️⃣ Validate input using Zod
     const validatedData = registerSchema.parse(data);
     const {
       firstName,
       lastName,
       country,
       telephone,
-      reference,
+      reference, // This is referral code (string)
       subscribe,
       password,
     } = validatedData;
 
-    // Validate if email or phone already exists
+    // 2️⃣ Check if phone already exists
     const existingUser = await prisma.user.findUnique({
       where: { telephone },
     });
+    if (existingUser) throw new AppError("Telephone already registered.");
 
-    if (existingUser) {
-      throw new AppError("Telephone already registered.");
+    // 3️⃣ Resolve referral if code provided
+    let referredById: string | null = null;
+    if (reference) {
+      const referrer = await prisma.user.findUnique({
+        where: { referralCode: reference },
+        select: { id: true },
+      });
+
+      if (!referrer) {
+        throw new AppError("Invalid referral code.");
+      }
+      referredById = referrer.id;
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create referral code (example)
-    const refCode = `REF${Math.random()
+    // 4️⃣ Generate unique referral code for new user
+    const referralCode = `REF${Math.random()
       .toString(36)
       .substring(2, 8)
       .toUpperCase()}`;
 
-    // Create user
+    // 5️⃣ Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 6️⃣ Create user
     const user = await prisma.user.create({
       data: {
         name: `${firstName} ${lastName}`,
         telephone,
-        country,
-        refCode,
-        referredBy: reference || null,
         password: hashedPassword,
+        referralCode,
         role: "user",
-        subscribe,
+        referredById, // may be null
       },
     });
 
+    // 7️⃣ Optional: reward referral
+    // if (referredById) {
+    //   await prisma.pointTransaction.create({
+    //     data: {
+    //       userId: referredById,
+    //       amount: 50, // example signup bonus
+    //       type: "REFERRAL_SIGNUP_BONUS",
+    //       meta: { newUserId: user.id },
+    //     },
+    //   });
+    //   await prisma.user.update({
+    //     where: { id: referredById },
+    //     data: {
+    //       cachedBalance: { increment: 50 },
+    //       totalPointsEarned: { increment: 50 },
+    //     },
+    //   });
+    // }
+
+    // ✅ Return success
     return serverActionCreatedResponse({
-      message: "User created successfully.  ",
+      message: referredById
+        ? "User created successfully with referral bonus applied."
+        : "User created successfully.",
       userId: user.id,
     });
   } catch (error) {
     return serverActionErrorResponse(error);
   }
 }
+
 export async function deleteUserByEmail(email: string, path: string) {
   try {
     if (!email) {
