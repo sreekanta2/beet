@@ -1,8 +1,6 @@
 "use client";
 
 import Breadcrumb from "@/components/breadcumb";
-import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
-import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -54,11 +52,46 @@ export default function CardRegistration() {
         ]}
       />
 
-      <div className="max-w-4xl mx-auto p-8 bg-white rounded-md shadow-sm">
-        {/* Header */}
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="flex flex-col md:flex-row justify-between items-start mb-4 gap-4">
+      <div className="max-w-4xl mx-auto p-8 bg-gradient-to-r from-blue-400 to-indigo-600 text-white rounded-lg shadow-lg flex flex-col items-center text-center space-y-4">
+        {/* Icon */}
+        <div className="bg-white/20 p-4 rounded-full">
+          <svg
+            className="w-12 h-12 text-white"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-3xl font-bold">Coming Soon</h1>
+
+        {/* Short info */}
+        <p className="max-w-xl text-sm md:text-base text-white/90">
+          We are working hard to bring you something amazing! Stay tuned for the
+          launch and be ready to experience it first.
+        </p>
+
+        {/* Call to action */}
+        <button className="mt-6 bg-white text-blue-600 font-semibold px-6 py-2 rounded-full shadow hover:bg-white/90 transition">
+          Notify Me
+        </button>
+      </div>
+    </div>
+  );
+}
+//  <Form {...form}>
+//    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+{
+  /* <div className="flex flex-col md:flex-row justify-between items-start mb-4 gap-4">
               <h1 className="text-2xl font-semibold">Card Registration</h1>
               <div className="max-w-xl">
                 <CustomFormField
@@ -70,14 +103,22 @@ export default function CardRegistration() {
                   required
                 />
               </div>
-            </div>
+            </div> */
+}
 
-            {/* Profile Section */}
-            <h2 className="text-sm font-semibold mb-2">Profile</h2>
-            <div className="border-t mb-6"></div>
+{
+  /* Profile Section */
+}
+{
+  /* <h2 className="text-sm font-semibold mb-2">Profile</h2>
+            <div className="border-t mb-6"></div> */
+}
 
-            {/* Name Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+{
+  /* Name Fields */
+}
+{
+  /* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 control={form.control}
@@ -102,10 +143,14 @@ export default function CardRegistration() {
                 placeholder="Mother Name"
                 required
               />
-            </div>
+            </div> */
+}
 
-            {/* NID, Occupation, Position */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+{
+  /* NID, Occupation, Position */
+}
+{
+  /* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 control={form.control}
@@ -130,10 +175,14 @@ export default function CardRegistration() {
                 placeholder="position"
                 required
               />
-            </div>
+            </div> */
+}
 
-            {/* Blood Group, Mobile, Email */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+{
+  /* Blood Group, Mobile, Email */
+}
+{
+  /* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 control={form.control}
@@ -159,10 +208,14 @@ export default function CardRegistration() {
                 placeholder="Email"
                 required
               />
-            </div>
+            </div> */
+}
 
-            {/* DOB, Gender, Nationality, Religion */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+{
+  /* DOB, Gender, Nationality, Religion */
+}
+{
+  /* <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 control={form.control}
@@ -200,10 +253,14 @@ export default function CardRegistration() {
                 placeholder="Religion"
                 required
               />
-            </div>
+            </div> */
+}
 
-            {/* Present Address */}
-            <h2 className="text-sm font-semibold mt-6 mb-2">Present Address</h2>
+{
+  /* Present Address */
+}
+{
+  /* <h2 className="text-sm font-semibold mt-6 mb-2">Present Address</h2>
             <div className="border-t mb-4"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomFormField
@@ -227,10 +284,14 @@ export default function CardRegistration() {
                 label="District"
                 placeholder="District"
               />
-            </div>
+            </div> */
+}
 
-            {/* Permanent Address */}
-            <h2 className="text-sm font-semibold mt-6 mb-2">
+{
+  /* Permanent Address */
+}
+{
+  /* <h2 className="text-sm font-semibold mt-6 mb-2">
               Permanent Address
             </h2>
             <div className="border-t mb-4"></div>
@@ -257,15 +318,21 @@ export default function CardRegistration() {
                 label="District"
                 placeholder="District"
               />
-            </div>
+            </div> */
+}
 
-            {/* Referral Details */}
-            <h2 className="text-sm font-semibold mt-6 mb-2">
+{
+  /* Referral Details */
+}
+{
+  /* <h2 className="text-sm font-semibold mt-6 mb-2">
               Referral Details
             </h2>
-            <div className="border-t mb-4"></div>
+            <div className="border-t mb-4"></div> */
+}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+{
+  /* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 control={form.control}
@@ -280,10 +347,14 @@ export default function CardRegistration() {
                 label="Mobile"
                 placeholder="Mobile"
               />
-            </div>
+            </div> */
+}
 
-            {/* Buttons */}
-            <div className="flex justify-between mt-8">
+{
+  /* Buttons */
+}
+{
+  /* <div className="flex justify-between mt-8">
               <button
                 type="button"
                 className="px-4 py-1 bg-gray-100 text-sm rounded border border-gray-300 hover:bg-gray-200"
@@ -296,10 +367,9 @@ export default function CardRegistration() {
               >
                 Save
               </button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </div>
-  );
+            </div> */
+}
+{
+  /* </form>
+ </Form>; */
 }

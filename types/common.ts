@@ -9,3 +9,20 @@ export interface SearchParams {
   page?: string;
   limit?: string;
 }
+export interface ShopperProfileInput {
+  userId: string;
+  country: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  telephone: string;
+  nid: string;
+  nomineId?: string;
+  nomineName?: string;
+  nominiRelation?: string;
+  division: string;
+  district: string;
+  upazila: string;
+  category?: string;
+  location?: string;
+}

@@ -12,91 +12,207 @@ import { registerSchema } from "@/zod-validation/auth";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 
-// ✅ Create User with Optional Referral
+import { ShopperProfileInput } from "@/types/common";
 export async function createUser(data: unknown) {
   try {
     // 1️⃣ Validate input using Zod
-    const validatedData = registerSchema.parse(data);
     const {
       firstName,
       lastName,
       country,
       telephone,
-      reference, // This is referral code (string)
+      reference, // referral code (string)
       subscribe,
       password,
-    } = validatedData;
+    } = registerSchema.parse(data);
 
-    // 2️⃣ Check if phone already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { telephone },
-    });
-    if (existingUser) throw new AppError("Telephone already registered.");
-
-    // 3️⃣ Resolve referral if code provided
-    let referredById: string | null = null;
-    if (reference) {
-      const referrer = await prisma.user.findUnique({
-        where: { referralCode: reference },
+    // 2️⃣ Use Prisma transaction for atomicity
+    const result = await prisma.$transaction(async (tx) => {
+      // 2.1️⃣ Check existing phone
+      const existingUser = await tx.user.findUnique({
+        where: { telephone },
         select: { id: true },
       });
+      if (existingUser) throw new AppError("Telephone already registered.");
 
-      if (!referrer) {
-        throw new AppError("Invalid referral code.");
+      // 2.2️⃣ Handle referral
+      let referredById: string | null = null;
+      if (reference) {
+        const referrer = await tx.user.findUnique({
+          where: { referralCode: reference },
+          select: { id: true },
+        });
+        if (!referrer) throw new AppError("Invalid referral code.");
+        referredById = referrer.id;
       }
-      referredById = referrer.id;
-    }
 
-    // 4️⃣ Generate unique referral code for new user
-    const referralCode = `REF${Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase()}`;
+      // 2.3️⃣ Generate referral code and serial number
+      const referralCode = `REF${Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase()}`;
+      const lastUser = await tx.user.findFirst({
+        orderBy: { serialNumber: "desc" },
+        select: { serialNumber: true },
+      });
+      const serialNumber = (lastUser?.serialNumber ?? 0) + 1;
 
-    // 5️⃣ Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+      // 2.4️⃣ Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 6️⃣ Create user
-    const user = await prisma.user.create({
-      data: {
-        name: `${firstName} ${lastName}`,
-        telephone,
-        password: hashedPassword,
-        referralCode,
-        role: "user",
-        referredById, // may be null
-      },
+      // 2.5️⃣ Create user
+      const user = await tx.user.create({
+        data: {
+          name: `${firstName} ${lastName}`,
+          telephone,
+          password: hashedPassword,
+          referralCode,
+          serialNumber,
+          role: "user",
+          referredById,
+        },
+        select: { id: true, referredById: true },
+      });
+
+      // 2.6️⃣ Optional: handle referral bonus
+      // if (referredById) {
+      //   const BONUS_POINTS = 50;
+      //   await tx.pointTransaction.create({
+      //     data: {
+      //       userId: referredById,
+      //       amount: BONUS_POINTS,
+      //       type: "REFERRAL_SIGNUP_BONUS",
+      //       meta: { newUserId: user.id },
+      //     },
+      //   });
+
+      //   await tx.user.update({
+      //     where: { id: referredById },
+      //     data: {
+      //       cachedBalance: { increment: BONUS_POINTS },
+      //       totalPointsEarned: { increment: BONUS_POINTS },
+      //     },
+      //   });
+      // }
+
+      return user;
     });
 
-    // 7️⃣ Optional: reward referral
-    // if (referredById) {
-    //   await prisma.pointTransaction.create({
-    //     data: {
-    //       userId: referredById,
-    //       amount: 50, // example signup bonus
-    //       type: "REFERRAL_SIGNUP_BONUS",
-    //       meta: { newUserId: user.id },
-    //     },
-    //   });
-    //   await prisma.user.update({
-    //     where: { id: referredById },
-    //     data: {
-    //       cachedBalance: { increment: 50 },
-    //       totalPointsEarned: { increment: 50 },
-    //     },
-    //   });
-    // }
-
-    // ✅ Return success
+    // ✅ Success
     return serverActionCreatedResponse({
-      message: referredById
+      message: result.referredById
         ? "User created successfully with referral bonus applied."
         : "User created successfully.",
-      userId: user.id,
+      userId: result.id,
     });
   } catch (error) {
     return serverActionErrorResponse(error);
   }
+}
+
+export async function updatePassword(data: {
+  userId: string;
+  password: string;
+}) {
+  try {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const user = await prisma.user.update({
+      where: { id: data.userId },
+      data: {
+        password: hashedPassword,
+      },
+      select: { id: true, referredById: true },
+    });
+
+    return { success: true, user };
+  } catch (error) {
+    console.error("Error updating password:", error);
+    return { success: false, error: "Failed to update password" };
+  }
+}
+export async function upsertShopperProfile(data: ShopperProfileInput) {
+  // Update basic user info
+  await prisma.user.update({
+    where: { id: data.userId },
+    data: {
+      name: `${data.firstName} ${data.lastName}`,
+      telephone: data.telephone,
+      email: data?.email,
+      emailVerified: new Date(), // optional
+    },
+  });
+
+  // Upsert Additional table
+  const additional = await prisma.additional.upsert({
+    where: { userId: data.userId },
+    update: {
+      country: data.country,
+      nid: data.nid,
+      nomineId: data.nomineId,
+      nomineName: data.nomineName,
+      nominiRelation: data.nominiRelation,
+      division: data.division,
+      district: data.district,
+      upazila: data.upazila,
+      category: data.category,
+      location: data.location,
+      updatedAt: new Date(),
+    },
+    create: {
+      userId: data.userId,
+      country: data.country,
+      nid: data.nid,
+      nomineId: data.nomineId,
+      nomineName: data.nomineName,
+      nominiRelation: data.nominiRelation,
+      division: data.division,
+      district: data.district,
+      upazila: data.upazila,
+      category: data.category || "",
+      location: data.location || "",
+    },
+  });
+
+  // Optional: Revalidate profile page if using ISR
+  revalidatePath("/dashboard/profile");
+
+  return additional;
+}
+
+export async function getShopperProfile(userId: string) {
+  if (!userId) throw new Error("User ID is required");
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      telephone: true,
+      emailVerified: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+      additionalInfo: {
+        select: {
+          country: true,
+          nid: true,
+          nomineId: true,
+          nomineName: true,
+          nominiRelation: true,
+          division: true,
+          district: true,
+          upazila: true,
+          category: true,
+          location: true,
+        },
+      },
+    },
+  });
+
+  if (!user) return null;
+  return user;
 }
 
 export async function deleteUserByEmail(email: string, path: string) {

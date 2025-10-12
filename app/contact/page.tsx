@@ -31,7 +31,7 @@ const ContactUs = () => {
               </p>
               <p className="mt-4">
                 <span className="font-semibold">
-                  Bee Tech Communication OPC
+                  Easy Tech Communication OPC
                 </span>
                 <br />
                 KF#315/2, West Joydebpur, Gazipur city corporation, Gazipur.

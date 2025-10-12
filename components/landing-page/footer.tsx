@@ -27,7 +27,7 @@ const Footer = () => {
             <h1 className="pt-2">Powered By EASYTECH </h1>
             <div className="  text-xs">
               {" "}
-              Bee Tech Communication OPC© {new Date().getFullYear()}
+              Easytech business world {new Date().getFullYear()}
             </div>
             <Link href={"https://srikanto.site"} target="_blank">
               Made

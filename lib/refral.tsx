@@ -9,7 +9,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
       data: {
         userId,
         amount: earned,
-        type: "MANUAL",
+        type: "CLUB_CREATION_SPEND",
         meta: { source: "deposit" },
       },
     });

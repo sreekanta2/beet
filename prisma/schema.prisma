@@ -46,41 +46,64 @@ enum TransferStatus {
 // --- Core Models ---
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  telephone     String?   @unique
-  password      String?
-  referralCode  String?   @unique
-  role          Role      @default(user)
-  emailVerified DateTime?
-  serialNumber  Int       @default(autoincrement())
+  id               String    @id @default(cuid())
+  name             String?
+  telephone        String?   @unique
+  email            String?
+  password         String?
+  referralCode     String?   @unique
+  role             Role      @default(user)
+  lastIncomeUpdate DateTime?
+  emailVerified    DateTime?
+  serialNumber     Int       @default(0)
   // Self-relation (Referrals)
-  referredById  String?
-  referredBy    User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  referrals     User[]    @relation("UserReferrals")
+  referredById     String?
+  referredBy       User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  referrals        User[]    @relation("UserReferrals")
 
-  deposit          Int        @default(0)
-  teamIncome       Int        @default(0)
-  clubsIncome      Int        @default(0)
-  clubsBonus       Int        @default(0)
-  royaltyIncome    Int        @default(0)
-  totalBalance     Int        @default(0)
+  deposit          Float      @default(0)
+  teamIncome       Float      @default(0)
+  clubsIncome      Float      @default(0)
+  clubsBonus       Float      @default(0)
+  royaltyIncome    Float      @default(0)
+  totalBalance     Float      @default(0)
   cachedClubsCount Int        @default(0)
   badgeLevel       BadgeLevel @default(NONE)
 
   // Relations
-  pointTransactions PointTransaction[]
-  clubs             Club[]
+  pointTransactions    PointTransaction[]
+  clubs                Club[]
+  mobileBankingService MobileBankingService[]
 
   // Auth
   accounts Account[]
   sessions Session[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  additionalInfo Additional?
 
   @@index([referredById])
   @@index([role])
+}
+
+model Additional {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  country        String
+  nid            String
+  nomineId       String?
+  nomineName     String?
+  nominiRelation String?
+  division       String
+  district       String
+  upazila        String
+  category       String
+  location       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Club {
@@ -121,6 +144,18 @@ model ClubsBonus {
   createdAt DateTime @default(now())
 
   @@index([clubId])
+}
+
+model MobileBankingService {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  number    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // --- Auth Models ---
