@@ -46,11 +46,12 @@ export default function WithdrawPage() {
     });
 
     const data = await res.json();
+    console.log(data);
     if (data.success) {
       toast.success(`Withdraw ${status}`);
       fetchWithdraws();
     } else {
-      toast.error("Failed to update withdraw");
+      toast.error(data?.message);
     }
   };
 
