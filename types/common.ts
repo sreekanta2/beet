@@ -3,14 +3,14 @@ export type UserRole = "user" | "admin" | "shoper";
 
 export interface SearchParams {
   search?: string;
-
+  serialNumber?: string;
   sortBy?: "rating" | "experience" | "fee" | "name";
   sortOrder?: "asc" | "desc";
   page?: string;
   limit?: string;
 }
 export interface ShopperProfileInput {
-  userId: string;
+  id: string;
   country: string;
   firstName: string;
   lastName: string;

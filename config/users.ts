@@ -4,6 +4,7 @@ export const getAllUsers = async (filterOptions: SearchParams = {}) => {
   const query = new URLSearchParams({
     sortOrder: filterOptions.sortOrder || "desc",
     page: filterOptions?.page !== undefined ? String(filterOptions.page) : "0",
+
     limit:
       filterOptions?.limit !== undefined ? String(filterOptions.limit) : "10",
   });
