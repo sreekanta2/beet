@@ -17,7 +17,7 @@ export async function evaluateBadges(
     const referralClubsDone = await tx.club.count({
       where: { ownerId: { in: user.referrals.map((r) => r.id) } },
     });
-    console.log({ referralClubsDone });
+
     let newBadge: BadgeLevel = BadgeLevel.NONE;
     if (referralCount >= 4 && referralClubsDone >= 50)
       newBadge = BadgeLevel.SILVER;

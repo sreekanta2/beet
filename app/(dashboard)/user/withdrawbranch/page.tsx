@@ -1,6 +1,5 @@
 "use client";
 import Breadcrumb from "@/components/breadcumb";
-import BackButton from "@/components/landing-page/back-button";
 import { useState } from "react";
 
 export default function WithdrawFromBranch() {
@@ -10,13 +9,7 @@ export default function WithdrawFromBranch() {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          { label: "Home", href: "/user/dashboard" },
-          { label: "Balance", href: "/user/balance" },
-          { label: "Withdraw Request" },
-        ]}
-      />
+      <Breadcrumb items={[{ label: "Withdraw Request" }]} />
       <div className="max-w-4xl mx-auto p-8 bg-white">
         <h1 className="text-3xl font-semibold mb-2">Withdraw From Branch</h1>
         <p className="text-sm mb-6">Withdraw Request</p>
@@ -69,7 +62,6 @@ export default function WithdrawFromBranch() {
 
           {/* Buttons */}
           <div className="flex justify-between mt-6">
-            <BackButton />
             <button
               type="submit"
               className="px-5 py-1.5 bg-sky-500 text-white text-sm rounded hover:bg-sky-600"

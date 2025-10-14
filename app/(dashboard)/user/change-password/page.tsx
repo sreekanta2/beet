@@ -83,12 +83,7 @@ export default function Page() {
 
   return (
     <div>
-      <Breadcrumb
-        items={[
-          { label: "dashboard", href: "/dashboard" },
-          { label: "Change password" },
-        ]}
-      />
+      <Breadcrumb items={[{ label: "Change password" }]} />
       <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-md mt-10 p-6 text-[14px] font-sans">
         <form onSubmit={handleSubmit} className="space-y-8">
           <section>

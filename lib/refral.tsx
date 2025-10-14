@@ -51,7 +51,6 @@ export async function processPointsAndClubs(userId: string, earned: number) {
 
     // 5️⃣ Get the last serial number for this user
     const lastClub = await tx.club.findFirst({
-      where: { ownerId: userId },
       orderBy: { serialNumber: "desc" },
       select: { serialNumber: true },
     });
@@ -110,6 +109,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
           where: { id: referredById },
           data: {
             teamIncome: { increment: 40 },
+            totalBalance: { increment: 40 },
           },
         });
       }

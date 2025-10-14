@@ -41,9 +41,7 @@ export default function MyUnits() {
 
   return (
     <div className="p-4">
-      <Breadcrumb
-        items={[{ label: "Home", href: "/user/dashboard" }, { label: "Units" }]}
-      />
+      <Breadcrumb items={[{ label: "Units" }]} />
 
       <div className="max-w-4xl mx-auto">
         <h1 className="text-xl font-semibold mb-6">My Units</h1>
@@ -104,7 +102,8 @@ export default function MyUnits() {
                         <DialogContent className="max-w-lg">
                           <DialogHeader>
                             <DialogTitle>
-                              Unit #{index + 1} — Bonus Details
+                              Unit # {selectedUnit?.serialNumber} — Bonus
+                              Details
                             </DialogTitle>
                           </DialogHeader>
 

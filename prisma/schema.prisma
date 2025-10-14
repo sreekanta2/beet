@@ -46,20 +46,21 @@ enum TransferStatus {
 // --- Core Models ---
 
 model User {
-  id               String    @id @default(cuid())
+  id               String   @id @default(cuid())
   name             String?
-  telephone        String?   @unique
+  telephone        String?  @unique
   email            String?
   password         String?
-  referralCode     String?   @unique
-  role             Role      @default(user)
-  lastIncomeUpdate DateTime?
-  emailVerified    DateTime?
-  serialNumber     Int       @default(0)
+  referralCode     String?  @unique
+  role             Role     @default(user)
+  lastIncomeUpdate DateTime @default(now())
+
+  emailVerified DateTime?
+  serialNumber  Int       @default(0)
   // Self-relation (Referrals)
-  referredById     String?
-  referredBy       User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  referrals        User[]    @relation("UserReferrals")
+  referredById  String?
+  referredBy    User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  referrals     User[]    @relation("UserReferrals")
 
   deposit          Float      @default(0)
   teamIncome       Float      @default(0)
@@ -135,8 +136,8 @@ model PointTransaction {
 }
 
 model ClubsBonus {
-  id String @id @default(cuid())
-
+  id        String   @id @default(cuid())
+  userId    String
   clubId    String
   club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
   amount    Int
@@ -144,6 +145,7 @@ model ClubsBonus {
   createdAt DateTime @default(now())
 
   @@index([clubId])
+  @@index([userId])
 }
 
 model MobileBankingService {

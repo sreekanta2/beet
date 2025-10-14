@@ -180,12 +180,7 @@ export default function ShopperAccount() {
 
   return (
     <div className="p-4 md:p-8">
-      <Breadcrumb
-        items={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Edit Information" },
-        ]}
-      />
+      <Breadcrumb items={[{ label: "Edit Information" }]} />
 
       <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-md mt-6 p-6 md:p-8 text-[14px] font-sans">
         <p className="text-sm text-gray-600 mb-6">

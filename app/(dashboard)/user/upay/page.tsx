@@ -58,10 +58,11 @@ export default function UpayPage() {
     setDialogOpen(true);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleSubmit = async () => {
@@ -133,28 +134,9 @@ export default function UpayPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center p-4 md:p-6 font-sans">
       <div className="w-full max-w-4xl">
-        <Breadcrumb
-          items={[
-            { label: "dashboard", href: "/dashboard" },
-            { label: "Upay" },
-          ]}
-        />
+        <Breadcrumb items={[{ label: "E-wallet" }]} />
 
         {/* Header Section */}
-        <div className="mt-8 mb-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl shadow-lg">
-              <Smartphone className="w-8 h-8 text-white" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            Mobile Banking Services
-          </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Manage your mobile banking accounts for seamless digital
-            transactions
-          </p>
-        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -325,13 +307,18 @@ export default function UpayPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Service Name
                 </label>
-                <input
+                <select
                   name="name"
-                  placeholder="e.g., bKash, Nagad, Rocket"
                   value={form.name}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
+                >
+                  <option value="">Select a service</option>
+                  <option value="bKash">bKash</option>
+                  <option value="nagad">Nagad</option>
+                  <option value="rocket">Rocket (DBBL)</option>
+                </select>
+
                 {errors.name && (
                   <p className="text-red-500 text-xs mt-2 flex items-center">
                     ⚠️ {errors.name}

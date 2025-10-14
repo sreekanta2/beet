@@ -16,13 +16,19 @@ export async function GET(
         id: true,
         totalBalance: true,
         clubsIncome: true,
+        teamIncome: true,
         lastIncomeUpdate: true,
         royaltyIncome: true,
+        cachedClubsCount: true,
         clubsBonus: true,
         deposit: true,
+        serialNumber: true,
         clubs: { select: { id: true } },
         createdAt: true,
         referralCode: true,
+        referrals: {
+          select: { id: true },
+        },
       },
     });
 

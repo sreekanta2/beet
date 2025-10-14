@@ -18,7 +18,7 @@ export default function WithdrawButton() {
       >
         <option value="">Withdraw </option>
         <option value="/user/withdrawbranch">Branch</option>
-        <option value="/user/mobile">Mobile</option>
+        <option value="/user/upay">Mobile</option>
       </select>
     </div>
   );

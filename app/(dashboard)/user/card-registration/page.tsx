@@ -45,12 +45,7 @@ export default function CardRegistration() {
 
   return (
     <div>
-      <Breadcrumb
-        items={[
-          { label: "dashboard", href: "/dashboard" },
-          { label: "Card Registration" },
-        ]}
-      />
+      <Breadcrumb items={[{ label: "Card Registration" }]} />
 
       <div className="max-w-4xl mx-auto p-8 bg-gradient-to-r from-blue-400 to-indigo-600 text-white rounded-lg shadow-lg flex flex-col items-center text-center space-y-4">
         {/* Icon */}
