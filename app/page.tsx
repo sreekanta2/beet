@@ -4,6 +4,7 @@ import Footer from "@/components/landing-page/footer";
 import Header from "@/components/landing-page/header";
 import { Button } from "@/components/ui/button";
 import { Home, LogIn, User } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 const HeroSlides = [
@@ -39,6 +40,7 @@ function HeroCarousel() {
 }
 
 export default function BeetcHomeReplica() {
+  const { data: session } = useSession();
   const router = useRouter();
   const handleRoute = (url: string) => {
     router.push(url);
@@ -48,42 +50,44 @@ export default function BeetcHomeReplica() {
       <Header />
       <main>
         {/* nav */}
-        <div className="md:hidden  space-y-4  py-8   bg-[#e9e9e9] p-3 border-b border-gray-300">
-          <div className="w-full   flex  gap-4">
-            <Button
-              className="bg-[#1e96c8] min-w-[130px]  w-fit  hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-              onClick={() => handleRoute("/auth/sign-up")}
-            >
-              <User size={16} /> Register
-            </Button>
-            <Button
-              className="bg-[#1e96c8]  w-full hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-              onClick={() => handleRoute("/auth/shoper")}
-            >
-              <Home size={16} /> Register Shopper
-            </Button>
-          </div>
-          <div className="w-full  flex gap-4">
-            <Button
-              className="bg-[#1e96c8] min-w-[130px]  w-fit  hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-              onClick={() => handleRoute("/auth/sign-in")}
-            >
-              <LogIn size={16} /> Login
-            </Button>
-            <Button
-              className="bg-[#1e96c8] w-full hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-              onClick={() => handleRoute("/auth/sign-in")}
-            >
-              <LogIn size={16} /> Login Shopper
-            </Button>
-          </div>
+        {!session?.user && (
+          <div className="md:hidden  space-y-4  py-8   bg-[#e9e9e9] p-3 border-b border-gray-300">
+            <div className="w-full   flex  gap-4">
+              <Button
+                className="bg-[#1e96c8] min-w-[130px]  w-fit  hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
+                onClick={() => handleRoute("/auth/sign-up")}
+              >
+                <User size={16} /> Register
+              </Button>
+              <Button
+                className="bg-[#1e96c8]  w-full hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
+                onClick={() => handleRoute("/auth/shoper")}
+              >
+                <Home size={16} /> Register Shopper
+              </Button>
+            </div>
+            <div className="w-full  flex gap-4">
+              <Button
+                className="bg-[#1e96c8] min-w-[130px]  w-fit  hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
+                onClick={() => handleRoute("/auth/sign-in")}
+              >
+                <LogIn size={16} /> Login
+              </Button>
+              <Button
+                className="bg-[#1e96c8] w-full hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
+                onClick={() => handleRoute("/auth/sign-in")}
+              >
+                <LogIn size={16} /> Login Shopper
+              </Button>
+            </div>
 
-          <div className="w-full flex justify-center">
-            <Button className="bg-[#1e96c8] min-w-[250px]   hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm">
-              Download App
-            </Button>
+            <div className="w-full flex justify-center">
+              <Button className="bg-[#1e96c8] min-w-[250px]   hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm">
+                Download App
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
         <div className="block md:hidden space-y-6 px-4 my-6">
           <div className="border bg-primary p-2 rounded-md">
             <Image
