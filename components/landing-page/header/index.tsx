@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Home, LogIn, LogOut, Menu, User, Video, X } from "lucide-react";
+import { Home, Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -33,50 +32,6 @@ export default function Header() {
   return (
     <header className="bg-[#e9e9e9] shadow-sm z-40 border-b border-gray-300">
       {/* Top Action Buttons */}
-      <div className="flex justify-end gap-3 container p-3">
-        {!session?.user ? (
-          <div className="hidden md:flex justify-end gap-3 container  p-3  ">
-            <Button
-              className="bg-[#1e96c8] hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-              onClick={() => handleRoute("/auth/sign-up")}
-            >
-              <User size={16} /> Register
-            </Button>
-            <Button
-              onClick={() => handleRoute("/auth/shoper")}
-              className="bg-[#1e96c8] hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-            >
-              <Home size={16} /> Register Shopper
-            </Button>
-            <Button
-              onClick={() => handleRoute("/auth/sign-in")}
-              className="bg-[#1e96c8] hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-            >
-              <LogIn size={16} /> Login
-            </Button>
-
-            <Button className="bg-[#1e96c8] hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm">
-              <Video size={16} /> Watch Video Tutorial
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full grid grid-cols-2 md:flex justify-end  gap-2">
-            <Button
-              onClick={() => handleRoute(`/${role}/dashboard`)}
-              className="bg-[#1e96c8] w-full md:w-fit hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-            >
-              <User size={16} /> My Account
-            </Button>
-            <Button
-              onClick={handleLogout}
-              className="bg-[#e63946] w-full md:w-fit hover:bg-[#c53030] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-            >
-              <LogOut size={16} /> Logout
-            </Button>
-          </div>
-        )}
-      </div>
-
       {/* Logo + Mobile Menu */}
       <div className="bg-background">
         <div className="container flex items-center justify-between py-4 px-4 md:px-0">
@@ -97,7 +52,6 @@ export default function Header() {
           </button>
         </div>
       </div>
-
       {/* Desktop Navigation */}
       <div className="hidden md:block w-full bg-black">
         <nav className="container text-white text-sm font-medium border-b border-gray-800">

@@ -1,7 +1,16 @@
 "use client";
 
 import Breadcrumb from "@/components/breadcumb";
-import { Edit, Plus, Shield, Smartphone, Trash2, X, Zap } from "lucide-react";
+import {
+  ArrowUpCircle,
+  Edit,
+  Plus,
+  Shield,
+  Smartphone,
+  Trash2,
+  X,
+  Zap,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -13,6 +22,11 @@ const serviceSchema = z.object({
     .min(10, "Phone number must be at least 10 digits")
     .max(15, "Phone number too long")
     .regex(/^[0-9]+$/, "Phone number must contain only digits"),
+});
+
+const withdrawSchema = z.object({
+  amount: z.number().min(1, "Amount must be greater than 0"),
+  pin: z.string().min(4, "PIN must be 4 digits").max(4, "PIN must be 4 digits"),
 });
 
 interface BankService {
@@ -27,12 +41,22 @@ export default function UpayPage() {
 
   const [services, setServices] = useState<BankService[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [editingService, setEditingService] = useState<BankService | null>(
     null
   );
+  const [selectedService, setSelectedService] = useState<BankService | null>(
+    null
+  );
   const [form, setForm] = useState({ name: "", number: "" });
+  const [withdrawForm, setWithdrawForm] = useState({ amount: 0, pin: "" });
   const [errors, setErrors] = useState<{ name?: string; number?: string }>({});
+  const [withdrawErrors, setWithdrawErrors] = useState<{
+    amount?: string;
+    pin?: string;
+  }>({});
   const [loading, setLoading] = useState(false);
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const fetchServices = async () => {
@@ -58,11 +82,26 @@ export default function UpayPage() {
     setDialogOpen(true);
   };
 
+  const openWithdraw = (service: BankService) => {
+    setSelectedService(service);
+    setWithdrawForm({ amount: 0, pin: "" });
+    setWithdrawErrors({});
+    setWithdrawOpen(true);
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleWithdrawChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setWithdrawForm((prev) => ({
+      ...prev,
+      [name]: name === "amount" ? Number(value) : value,
+    }));
   };
 
   const handleSubmit = async () => {
@@ -110,6 +149,52 @@ export default function UpayPage() {
     }
   };
 
+  const handleWithdraw = async () => {
+    setWithdrawErrors({});
+    const validation = withdrawSchema.safeParse(withdrawForm);
+    if (!validation.success) {
+      const fieldErrors: { amount?: string; pin?: string } = {};
+      validation.error.errors.forEach((err) => {
+        const field = err.path[0] as "amount" | "pin";
+        fieldErrors[field] = err.message;
+      });
+      setWithdrawErrors(fieldErrors);
+      return;
+    }
+
+    if (!selectedService || !userId) return;
+    setWithdrawLoading(true);
+
+    try {
+      const res = await fetch("/api/users/withdraw", {
+        method: "POST",
+        body: JSON.stringify({
+          serviceId: selectedService.id,
+          amount: withdrawForm.amount,
+          pin: withdrawForm.pin,
+          userId: userId,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        // Handle successful withdrawal
+        setWithdrawOpen(false);
+        // You might want to refresh user balance or show success message
+        alert(
+          `Successfully withdrew ${withdrawForm.amount} from ${selectedService.name}`
+        );
+      } else {
+        setWithdrawErrors({ pin: data.message || "Withdrawal failed" });
+      }
+    } catch (error) {
+      setWithdrawErrors({ pin: "Network error. Please try again." });
+    } finally {
+      setWithdrawLoading(false);
+    }
+  };
+
   const handleDelete = async (id: number) => {
     setLoading(true);
     await fetch("/api/mobile-banking", {
@@ -135,8 +220,6 @@ export default function UpayPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center p-4 md:p-6 font-sans">
       <div className="w-full max-w-4xl">
         <Breadcrumb items={[{ label: "E-wallet" }]} />
-
-        {/* Header Section */}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -261,6 +344,14 @@ export default function UpayPage() {
 
                       <div className="flex items-center space-x-2">
                         <button
+                          onClick={() => openWithdraw(service)}
+                          className="flex items-center gap-1 px-3 py-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-xl transition-all duration-200 border border-green-200 hover:border-green-300"
+                          title="Withdraw funds"
+                        >
+                          <ArrowUpCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">Withdraw</span>
+                        </button>
+                        <button
                           onClick={() => openDialog(service)}
                           className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group/edit"
                           title="Edit service"
@@ -358,6 +449,111 @@ export default function UpayPage() {
                   "Update Service"
                 ) : (
                   "Add Service"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Withdraw Dialog */}
+      {withdrawOpen && selectedService && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl transform transition-all duration-300 scale-100">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Withdraw Funds</h2>
+                <button
+                  onClick={() => setWithdrawOpen(false)}
+                  className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Service Info */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-600">
+                    Service:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {selectedService.name}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-600">
+                    Account:
+                  </span>
+                  <span className="text-sm font-mono text-gray-900">
+                    {selectedService.number}
+                  </span>
+                </div>
+              </div>
+
+              {/* Amount Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount to Withdraw
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    ৳
+                  </span>
+                  <input
+                    type="number"
+                    name="amount"
+                    placeholder="0.00"
+                    value={withdrawForm.amount || ""}
+                    onChange={handleWithdrawChange}
+                    className="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+                {withdrawErrors.amount && (
+                  <p className="text-red-500 text-xs mt-2 flex items-center">
+                    ⚠️ {withdrawErrors.amount}
+                  </p>
+                )}
+              </div>
+
+              {/* PIN Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Security PIN
+                </label>
+                <input
+                  type="password"
+                  name="pin"
+                  placeholder="Enter 4-digit PIN"
+                  maxLength={4}
+                  value={withdrawForm.pin}
+                  onChange={handleWithdrawChange}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                />
+                {withdrawErrors.pin && (
+                  <p className="text-red-500 text-xs mt-2 flex items-center">
+                    ⚠️ {withdrawErrors.pin}
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={handleWithdraw}
+                disabled={withdrawLoading}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 disabled:opacity-70 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+              >
+                {withdrawLoading ? (
+                  <span className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Processing Withdrawal...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center">
+                    <ArrowUpCircle className="w-5 h-5 mr-2" />
+                    Withdraw Funds
+                  </span>
                 )}
               </button>
             </div>

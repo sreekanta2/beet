@@ -10,8 +10,9 @@ export interface SearchParams {
   limit?: string;
 }
 export interface ShopperProfileInput {
-  id: string;
+  id?: string;
   country: string;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;

@@ -11,7 +11,7 @@ function generateClubSeries(start: number): number[] {
 
   for (let i = 0; i < MAX_BONUS_STEPS; i++) {
     series.push(value);
-    value = i < 4 ? value * 3 : value * 2;
+    value = value * 3;
   }
 
   return series;
@@ -21,7 +21,7 @@ export async function GET(
   req: Request,
   { params }: { params: { ownerId: string } }
 ) {
-  const userId = params?.ownerId || "cmgprfkdi0003ue4kset05jn8";
+  const userId = params?.ownerId;
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
@@ -36,6 +36,7 @@ export async function GET(
 
     for (const club of clubs) {
       const pattern = generateClubSeries(club.serialNumber).slice(1);
+
       const validPattern = pattern.filter((num) => num <= totalClubs);
       const limitedPattern = validPattern.slice(0, MAX_BONUS_STEPS);
 
@@ -65,7 +66,7 @@ export async function GET(
             },
           });
 
-          totalNewBonus += bonusAmount; // 🧮 add only newly created
+          totalNewBonus += bonusAmount;
         }
       } else {
         console.log(

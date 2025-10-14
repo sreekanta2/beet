@@ -20,6 +20,7 @@ import useSWR from "swr";
 import { z } from "zod";
 
 interface ShopperForm {
+  userId: string;
   country: string;
   firstName: string;
   lastName: string;

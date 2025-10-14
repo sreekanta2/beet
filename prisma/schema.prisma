@@ -62,10 +62,12 @@ model User {
   referredBy    User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: Restrict, onUpdate: Restrict)
   referrals     User[]    @relation("UserReferrals")
 
-  deposit          Float      @default(0)
-  teamIncome       Float      @default(0)
-  clubsIncome      Float      @default(0)
-  clubsBonus       Float      @default(0)
+  deposit Float @default(0)
+
+  teamIncome  Float @default(0)
+  clubsIncome Float @default(0)
+  clubsBonus  Float @default(0)
+
   royaltyIncome    Float      @default(0)
   totalBalance     Float      @default(0)
   cachedClubsCount Int        @default(0)
@@ -83,6 +85,7 @@ model User {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   additionalInfo Additional?
+  withdraw       Withdraw[]
 
   @@index([referredById])
   @@index([role])
@@ -126,10 +129,11 @@ model PointTransaction {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  amount    Int
-  type      TransactionType
+  amount Int
+  type   TransactionType
+
   meta      Json?
-  createdAt DateTime        @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([type])
@@ -149,15 +153,43 @@ model ClubsBonus {
 }
 
 model MobileBankingService {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  number    String
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  number String
+
+  withdrawals Withdraw[] // 🔗 one MobileBankingService → many Withdraw
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+model Withdraw {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  mobileBankingServiceId String
+  mobileBankingService   MobileBankingService @relation(fields: [mobileBankingServiceId], references: [id], onDelete: Cascade)
+
+  amount Float
+  status WithdrawStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([mobileBankingServiceId])
+}
+
+enum WithdrawStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
 }
 
 // --- Auth Models ---

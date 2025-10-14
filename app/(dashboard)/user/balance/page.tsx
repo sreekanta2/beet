@@ -1,6 +1,7 @@
 "use client";
 
 import Breadcrumb from "@/components/breadcumb";
+import { Withdraw } from "@prisma/client";
 import {
   Award,
   BanknoteIcon,
@@ -38,7 +39,7 @@ export default function PointsDashboard() {
 
   const [liveClubIncome, setLiveClubIncome] = useState(0);
   const [liveTotalBalance, setLiveTotalBalance] = useState(0);
-  console.log(user);
+
   // ⏱️ Smooth per-second income update
   useEffect(() => {
     if (!user) return;
@@ -47,7 +48,7 @@ export default function PointsDashboard() {
     const now = Date.now();
 
     const elapsedSeconds = Math.floor((now - lastUpdate) / 1000);
-    console.log({ elapsedSeconds });
+
     let currentClubIncome =
       user?.clubsIncome + elapsedSeconds * user.perSecondIncome;
     let currentTotalBalance =
@@ -217,16 +218,69 @@ export default function PointsDashboard() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">
-                      Total Withdrawn
-                    </h3>
-                    <p className="text-sm text-gray-600">Amount withdrawn</p>
+                <div className="flex flex-col gap-4">
+                  {/* Total Withdrawn */}
+                  <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        Total Withdrawn
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Amount successfully withdrawn
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-gray-900">
+                        {user?.withdraw
+                          ?.filter((w: Withdraw) => w.status === "COMPLETED")
+                          .reduce(
+                            (sum: any, w: { amount: any }) => sum + w.amount,
+                            0
+                          ) || 0}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {user?.withdraw?.length
+                          ? `${
+                              user.withdraw.filter(
+                                (w: Withdraw) => w.status === "COMPLETED"
+                              ).length
+                            } completed`
+                          : "No withdrawals"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-gray-900">0.00</p>
-                    <p className="text-xs text-gray-500">No withdrawals</p>
+
+                  {/* Pending Amount */}
+                  <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        Pending Amount
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Withdrawals in processing
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-gray-900">
+                        {user?.withdraw
+                          ?.filter((w: Withdraw) => w.status === "PENDING")
+                          .reduce(
+                            (sum: any, w: { amount: any }) => sum + w.amount,
+                            0
+                          ) || 0}
+                      </p>
+                      <p className="text-xs text-orange-400">
+                        {user?.withdraw?.filter(
+                          (w: Withdraw) => w.status === "PENDING"
+                        ).length
+                          ? `${
+                              user.withdraw.filter(
+                                (w: Withdraw) => w.status === "PENDING"
+                              ).length
+                            } pending`
+                          : "No pending withdrawals"}
+                      </p>
+                    </div>
                   </div>
                 </div>
 

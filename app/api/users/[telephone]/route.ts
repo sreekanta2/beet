@@ -23,6 +23,13 @@ export async function GET(
         clubsBonus: true,
         deposit: true,
         serialNumber: true,
+
+        withdraw: {
+          select: {
+            amount: true,
+            status: true,
+          },
+        },
         clubs: { select: { id: true } },
         createdAt: true,
         referralCode: true,

@@ -164,7 +164,6 @@ export default function AccountDashboard() {
     },
   ];
 
-  console.log(data);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 font-sans">
       {/* Header Section */}
