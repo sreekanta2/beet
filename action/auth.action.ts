@@ -19,10 +19,10 @@ export async function createUser(data: unknown) {
     const {
       firstName,
       lastName,
-      country,
+      role,
       telephone,
-      reference, // referral code (string)
-      subscribe,
+      reference,
+
       password,
     } = registerSchema.parse(data);
 
@@ -68,32 +68,11 @@ export async function createUser(data: unknown) {
           password: hashedPassword,
           referralCode,
           serialNumber,
-          role: "user",
+          role: role || "user",
           referredById,
         },
         select: { id: true, referredById: true },
       });
-
-      // 2.6️⃣ Optional: handle referral bonus
-      // if (referredById) {
-      //   const BONUS_POINTS = 50;
-      //   await tx.pointTransaction.create({
-      //     data: {
-      //       userId: referredById,
-      //       amount: BONUS_POINTS,
-      //       type: "REFERRAL_SIGNUP_BONUS",
-      //       meta: { newUserId: user.id },
-      //     },
-      //   });
-
-      //   await tx.user.update({
-      //     where: { id: referredById },
-      //     data: {
-      //       cachedBalance: { increment: BONUS_POINTS },
-      //       totalPointsEarned: { increment: BONUS_POINTS },
-      //     },
-      //   });
-      // }
 
       return user;
     });

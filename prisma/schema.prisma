@@ -77,10 +77,10 @@ model User {
   pointTransactions    PointTransaction[]
   clubs                Club[]
   mobileBankingService MobileBankingService[]
-
+  shop                 Shop?
   // Auth
-  accounts Account[]
-  sessions Session[]
+  accounts             Account[]
+  sessions             Session[]
 
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
@@ -89,6 +89,25 @@ model User {
 
   @@index([referredById])
   @@index([role])
+}
+
+model Shop {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch             String?
+  shopName           String
+  division           String
+  district           String
+  upazila            String
+  calculationType    String
+  calculationAmmount Decimal  @db.Decimal(10, 2)
+  agree              Boolean  @default(false)
+  // Timestamps
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Additional {

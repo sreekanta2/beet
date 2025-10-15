@@ -30,11 +30,11 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-[#e9e9e9] shadow-sm z-40 border-b border-gray-300">
+    <header className="bg-[#e9e9e9]   shadow-sm z-40 border-b border-gray-300 ">
       {/* Top Action Buttons */}
       {/* Logo + Mobile Menu */}
-      <div className="bg-background">
-        <div className="container flex items-center justify-between py-4 px-4 md:px-0">
+      <div className="bg-background ">
+        <div className="flex max-w-4xl mx-auto items-center justify-between py-4 px-4 md:px-0">
           <div
             className="font-medium text-5xl md:text-4xl cursor-pointer "
             onClick={() => handleRoute("/")}
@@ -54,7 +54,7 @@ export default function Header() {
       </div>
       {/* Desktop Navigation */}
       <div className="hidden md:block w-full bg-black">
-        <nav className="container text-white text-sm font-medium border-b border-gray-800">
+        <nav className="max-w-4xl mx-auto text-white text-sm font-medium border-b border-gray-800">
           <ul className="flex items-center justify-start">
             <li
               className={`flex items-center gap-1 px-4 py-3 border-r border-gray-700 transition cursor-pointer ${

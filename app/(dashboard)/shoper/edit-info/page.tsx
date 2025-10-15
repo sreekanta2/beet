@@ -1,422 +1,362 @@
 "use client";
 
+import { getShopperProfile, upsertShopperProfile } from "@/action/auth.action";
 import Breadcrumb from "@/components/breadcumb";
+import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
+import { Form } from "@/components/ui/form";
 import {
   allDivision,
   districtsOf,
+  DivisonName,
   upazilasOf,
 } from "@bangladeshi/bangladesh-address";
-import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useEffect, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import useSWR from "swr";
+import { z } from "zod";
 
 interface ShopperForm {
-  selfCustomerId: string;
-  introducerCustomerId: string;
-  branch: string;
-  shopName: string;
-  ownerName: string;
-  nidNumber: string;
+  userId: string;
+  country: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  telephone: string;
+  nid: string;
+  nomineId?: string;
+  nomineName?: string;
+  nominiRelation?: string;
   division: string;
   district: string;
   upazila: string;
-  telephone: string;
-  calculationType: string;
-  password: string;
-  confirmPassword: string;
-  agree: boolean;
-  calculationAmmount: string;
+  category?: string;
+  location?: string;
 }
 
+// 🧩 Zod Schema
+const shopperSchema = z.object({
+  country: z.string().nonempty("Country is required"),
+  firstName: z.string().nonempty("First name is required"),
+  lastName: z.string().nonempty("Last name is required"),
+  email: z.string().email("Invalid email address"),
+  telephone: z.string().nonempty("Telephone is required"),
+  nid: z.string().nonempty("NID is required"),
+  nomineId: z.string().optional(),
+  nomineName: z.string().optional(),
+  nominiRelation: z.string().optional(),
+  division: z.string().nonempty("Division is required"),
+  district: z.string().nonempty("District is required"),
+  upazila: z.string().nonempty("Upazila is required"),
+  category: z.string().optional(),
+  location: z.string().optional(),
+});
+
 export default function ShopperAccount() {
+  const { data: session } = useSession();
+  const [isPending, startTransition] = useTransition();
+
   const [divisions, setDivisions] = useState<string[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
-  const [upazilas, setUpazilas] = useState<
-    { upazila: string; district: string; division: string }[]
-  >([]);
+  const [upazilas, setUpazilas] = useState<string[]>([]);
 
-  const [form, setForm] = useState<ShopperForm>({
-    selfCustomerId: "",
-    introducerCustomerId: "",
-    branch: "",
-    shopName: "",
-    ownerName: "",
-    nidNumber: "",
-    division: "",
-    district: "",
-    upazila: "",
-    telephone: "",
-    calculationType: "",
-    password: "",
-    confirmPassword: "",
-    agree: false,
-    calculationAmmount: "",
+  const form = useForm<ShopperForm>({
+    resolver: zodResolver(shopperSchema),
+    defaultValues: {
+      country: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      telephone: "",
+      nid: "",
+      nomineId: "",
+      nomineName: "",
+      nominiRelation: "",
+      division: "",
+      district: "",
+      upazila: "",
+      category: "",
+      location: "",
+    },
   });
+
+  const watchDivision = form.watch("division");
+  const watchDistrict = form.watch("district");
+
+  // SWR fetcher
+  const fetcher = async (userId: string) => getShopperProfile(userId);
+  const { data: profile, isLoading } = useSWR(
+    session?.user?.id ? `shopper-${session.user.id}` : null,
+    () => fetcher(session!.user!.id)
+  );
 
   // Load divisions
   useEffect(() => {
     setDivisions(allDivision());
   }, []);
 
-  // Update districts when division changes
+  // Set form values when profile loads
   useEffect(() => {
-    if (form.division) {
-      setDistricts(districtsOf(form.division as any));
-      setForm((prev) => ({ ...prev, district: "", upazila: "" }));
+    if (profile) {
+      const fullName = profile.name?.trim() || "";
+      const nameParts = fullName.split(" ");
+
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts[1];
+
+      form.reset({
+        country: profile.additionalInfo?.country || "Bangladesh",
+        firstName,
+        lastName,
+        email: profile.email || "",
+        telephone: profile.telephone || "",
+        nid: profile.additionalInfo?.nid || "",
+        nomineId: profile.additionalInfo?.nomineId || "",
+        nomineName: profile.additionalInfo?.nomineName || "",
+        nominiRelation: profile.additionalInfo?.nominiRelation || "",
+        division: profile.additionalInfo?.division || "",
+        district: profile.additionalInfo?.district || "",
+        upazila: profile.additionalInfo?.upazila || "",
+        category: profile.additionalInfo?.category || "",
+        location: profile.additionalInfo?.location || "",
+      });
+
+      if (profile.additionalInfo?.division) {
+        const districtNames = districtsOf(
+          profile.additionalInfo.division as DivisonName
+        );
+        setDistricts(districtNames);
+      }
+      if (profile.additionalInfo?.district) {
+        const upazilaNames = upazilasOf(profile.additionalInfo.district).map(
+          (u: any) => u.upazila
+        );
+        setUpazilas(upazilaNames);
+      }
+    }
+  }, [profile, form]);
+
+  // Handle dependent selects
+  useEffect(() => {
+    if (watchDivision) {
+      const districtNames = districtsOf(watchDivision as DivisonName);
+      setDistricts(districtNames);
+      form.setValue("district", "");
+      form.setValue("upazila", "");
       setUpazilas([]);
     } else {
       setDistricts([]);
       setUpazilas([]);
     }
-  }, [form.division]);
+  }, [watchDivision, form]);
 
-  // Update upazilas when district changes
-  // Update upazilas when district changes
   useEffect(() => {
-    if (form.district) {
-      const upz = upazilasOf(form.district);
-      setUpazilas(upz);
-      setForm((prev) => ({ ...prev, upazila: "" }));
+    if (watchDistrict) {
+      const upazilaNames = upazilasOf(watchDistrict).map((u: any) => u.upazila);
+      setUpazilas(upazilaNames);
+      form.setValue("upazila", "");
     } else {
       setUpazilas([]);
     }
-  }, [form.district]);
+  }, [watchDistrict, form]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-
-    // Determine if the target is a checkbox
-    const val =
-      type === "checkbox" && "checked" in e.target ? e.target.checked : value;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: val,
-    }));
+  // Submit handler
+  const onSubmit = async (data: ShopperForm) => {
+    if (!session?.user?.id) return;
+    startTransition(async () => {
+      try {
+        await upsertShopperProfile({ ...data, userId: session.user.id });
+        toast.success("Profile updated successfully!");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update profile");
+      }
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(form);
-  };
+  if (isLoading) return <p>Loading profile...</p>;
 
   return (
-    <div className="p-6">
-      <Breadcrumb
-        items={[
-          { label: "dashboard", href: "/dashboard" },
-          { label: "Edit Information" },
-        ]}
-      />
-      <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-md   p-6 text-[14px] font-sans">
-        {/* Breadcrumb */}
+    <div className="p-4 md:p-8">
+      <Breadcrumb items={[{ label: "Edit Information" }]} />
 
-        <h1 className="text-2xl font-semibold mb-2">Shopper Account</h1>
+      <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-md mt-6 p-6 md:p-8 text-[14px] font-sans">
         <p className="text-sm text-gray-600 mb-6">
-          If you already have an account with us, please{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
-            login at the login page
-          </a>
+          If you already have an account, please{" "}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            login
+          </Link>
           .
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Reference Customer */}
-          <section>
-            <h2 className="font-semibold mb-2 text-base">Reference Customer</h2>
-            <div className="border-t border-gray-200 pt-3 space-y-4">
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Self Customer ID
-                </label>
-                <input
-                  type="text"
-                  name="selfCustomerId"
-                  placeholder="Self Customer ID"
-                  value={form.selfCustomerId}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 md:space-y-8"
+          >
+            {/* Personal Info */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="firstName"
+                label="First Name"
+                placeholder="First Name"
+                required
+              />
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="lastName"
+                label="Last Name"
+                placeholder="Last Name"
+                required
+              />
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="email"
+                label="Email"
+                type="email"
+                placeholder="Email"
+                required
+              />
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="telephone"
+                label="Telephone"
+                placeholder="Telephone"
+                required
+              />
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="nid"
+                label="NID"
+                placeholder="NID"
+                required
+              />
+            </section>
 
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Introducer Customer ID
-                </label>
-                <input
-                  required
-                  type="text"
-                  name="introducerCustomerId"
-                  placeholder="Introducer Customer ID"
-                  value={form.introducerCustomerId}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
-            </div>
-          </section>
+            {/* Nominee Info */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="nomineId"
+                label="Nominee NID"
+              />
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="nomineName"
+                label="Nominee Name"
+              />
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                control={form.control}
+                name="nominiRelation"
+                label="Relation with Nominee"
+              />
+            </section>
 
-          {/* Shop Details */}
-          <section>
-            <h2 className="font-semibold mb-2 text-base">Your Shop Details</h2>
-            <div className="border-t border-gray-200 pt-3 space-y-4">
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Branch
-                </label>
-                <select
-                  required
-                  name="branch"
-                  value={form.branch}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                >
-                  <option value="">[Please Select]</option>
-                  <option>Dhaka</option>
-                  <option>Chittagong</option>
-                  <option>Khulna</option>
-                  <option>Rajshahi</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Shop Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  name="shopName"
-                  placeholder="Shop Name"
-                  value={form.shopName}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Owner Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  name="ownerName"
-                  placeholder="Owner Name"
-                  value={form.ownerName}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium">NID Number</label>
-                <input
-                  type="text"
-                  name="nidNumber"
-                  placeholder="NID Number"
-                  value={form.nidNumber}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Personal Details */}
-          <section>
-            <h2 className="font-semibold mb-2 text-base">
-              Your Personal Details
-            </h2>
-            <div className="border-t border-gray-200 pt-3 space-y-4">
+            {/* Location Info */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Division */}
               <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Division
-                </label>
+                <label className="block mb-1 font-medium">Division</label>
                 <select
-                  name="division"
-                  required
-                  value={form.division}
-                  onChange={handleChange}
+                  {...form.register("division")}
                   className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
                 >
-                  <option value="">[Select Division]</option>
+                  <option value="">Select Division</option>
                   {divisions.map((d) => (
                     <option key={d} value={d}>
                       {d}
                     </option>
                   ))}
                 </select>
+                {form.formState.errors.division && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.division.message}
+                  </p>
+                )}
               </div>
 
               {/* District */}
-              {districts?.length > 0 && (
-                <div>
-                  <label className="block mb-1 font-medium">
-                    <span className="text-red-500">*</span> District
-                  </label>
-                  <select
-                    required
-                    name="district"
-                    value={form.district}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                    disabled={!form.division}
-                  >
-                    <option value="">[Select District]</option>
-                    {districts.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div>
+                <label className="block mb-1 font-medium">District</label>
+                <select
+                  {...form.register("district")}
+                  disabled={!watchDivision}
+                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+                >
+                  <option value="">Select District</option>
+                  {districts.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+                {form.formState.errors.district && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.district.message}
+                  </p>
+                )}
+              </div>
 
               {/* Upazila */}
-              {upazilas?.length > 0 && (
-                <div>
-                  <label className="block mb-1 font-medium">
-                    {" "}
-                    <span className="text-red-500">*</span> Upazila
-                  </label>
-                  <select
-                    required
-                    name="upazila"
-                    value={form.upazila}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                    disabled={!form.district}
-                  >
-                    <option value="">[Select Upazila]</option>
-                    {upazilas.map((u) => (
-                      <option key={u.upazila} value={u.upazila}>
-                        {u?.upazila}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {/* Telephone */}
               <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Telephone
-                </label>
-                <input
-                  type="text"
-                  required
-                  name="telephone"
-                  placeholder="Telephone"
-                  value={form.telephone}
-                  onChange={handleChange}
+                <label className="block mb-1 font-medium">Upazila</label>
+                <select
+                  {...form.register("upazila")}
+                  disabled={!watchDistrict}
                   className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
+                >
+                  <option value="">Select Upazila</option>
+                  {upazilas.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </select>
+                {form.formState.errors.upazila && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {form.formState.errors.upazila.message}
+                  </p>
+                )}
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Contract */}
-          <section>
-            <h2 className="font-semibold mb-2 text-base">Contract</h2>
-            <div className="border-t border-gray-200 pt-3">
-              <label className="block mb-1 font-medium">
-                {" "}
-                <span className="text-red-500">*</span> Calculation Type
-              </label>
-              <select
-                name="calculationType"
-                required
-                value={form.calculationType}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
+            {/* Category & Location */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {["category", "location"].map((field) => (
+                <CustomFormField
+                  key={field}
+                  fieldType={FormFieldType.INPUT}
+                  control={form.control}
+                  name={field as keyof ShopperForm}
+                  label={field.charAt(0).toUpperCase() + field.slice(1)}
+                  placeholder={field}
+                />
+              ))}
+            </section>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isPending}
+                className="bg-[#1E90FF] text-white px-5 py-2 rounded-sm hover:bg-blue-700 text-sm disabled:opacity-50"
               >
-                <option value="">[Please select]</option>
-                <option>Fixed</option>
-                <option>Percent</option>
-              </select>
+                {isPending ? "Saving..." : "Continue"}
+              </button>
             </div>
-            {form?.calculationType === "Percent" && (
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Calculation Amount
-                </label>
-                <input
-                  required
-                  type="text"
-                  name="calculationAmmount"
-                  placeholder=""
-                  value={form.calculationAmmount}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
-            )}
-          </section>
-
-          {/* Password */}
-          <section>
-            <h2 className="font-semibold mb-2 text-base">Your Password</h2>
-            <div className="border-t border-gray-200 pt-3 space-y-4">
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Password
-                </label>
-                <input
-                  required
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium">
-                  <span className="text-red-500">*</span> Password Confirm
-                </label>
-                <input
-                  type="password"
-                  required
-                  name="confirmPassword"
-                  placeholder="Password Confirm"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Agreement + Submit */}
-          <div className="flex flex-col md:flex-row justify-between items-center border-t border-gray-200 pt-3">
-            <label className="flex items-center text-sm space-x-2 mb-3 md:mb-0">
-              <input
-                type="checkbox"
-                name="agree"
-                checked={form.agree}
-                onChange={handleChange}
-                className="accent-blue-600"
-              />
-              <span>
-                I have read and agree to the{" "}
-                <a href="#" className="text-blue-600 hover:underline">
-                  Privacy Policy
-                </a>
-              </span>
-            </label>
-
-            <button
-              type="submit"
-              className="bg-[#1E90FF] text-white px-5 py-2 rounded-sm hover:bg-blue-700 text-sm"
-            >
-              Continue
-            </button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </div>
     </div>
   );

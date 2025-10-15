@@ -38,18 +38,21 @@ import {
   Search,
   Users,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
+  const { data: session } = useSession();
   const [filterId, setFilterId] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [points, setPoints] = useState<number>(0);
   const [openDialog, setOpenDialog] = useState<null | "deposit" | "withdraw">(
     null
   );
-
+  console.log(selectedUser);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -106,13 +109,19 @@ export default function AdminPage() {
 
     try {
       if (type === "deposit") {
-        const result = await fetch("/api/earn", {
+        const result = await fetch("/api/shoper/transfer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: selectedUser.id, earned: points }),
+          body: JSON.stringify({
+            sId: selectedUser?.serialNumber,
+            amount: Number(points),
+            role: selectedUser?.role,
+            userId: session?.user?.id,
+          }),
         });
 
         const data = await result.json();
+        console.log(data);
         if (data.success) {
           toast.success(`Deposited ${points} points to ${selectedUser.name}`);
           fetchUsers();
@@ -322,7 +331,7 @@ export default function AdminPage() {
                       Points
                     </TableHead>
                     <TableHead className="font-semibold text-gray-700 text-right">
-                      Status
+                      Type
                     </TableHead>
                     <TableHead className="font-semibold text-gray-700 text-right">
                       Actions
@@ -404,11 +413,7 @@ export default function AdminPage() {
                               user
                             )}`}
                           >
-                            {user.deposit && user.deposit >= 1000
-                              ? "Premium"
-                              : user.deposit && user.deposit >= 500
-                              ? "Active"
-                              : "Basic"}
+                            {user?.role}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">

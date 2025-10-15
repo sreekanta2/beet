@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { NextResponse } from "next/server";
 import { AppError } from "./actions/actions-error-response";
 import { evaluateBadges } from "./evaluate";
 
@@ -42,7 +43,10 @@ export async function processPointsAndClubs(userId: string, earned: number) {
 
     const remainingSlots = MAX_CLUBS - cachedClubsCount;
     if (remainingSlots <= 0) {
-      throw new AppError("You reach all clubs ", 403);
+      return NextResponse.json({
+        success: false,
+        message: "You reach clubs limit ",
+      });
     }
 
     const possibleClubs = Math.floor(deposit / CLUB_COST);

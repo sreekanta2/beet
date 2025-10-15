@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -46,7 +45,7 @@ export default function WithdrawPage() {
     });
 
     const data = await res.json();
-    console.log(data);
+
     if (data.success) {
       toast.success(`Withdraw ${status}`);
       fetchWithdraws();
@@ -58,7 +57,7 @@ export default function WithdrawPage() {
   if (loading) return <p className="p-4">Loading...</p>;
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold">Withdraw Requests</h1>
 
       {withdraws.length === 0 && <p>No withdraw requests yet.</p>}
@@ -92,12 +91,6 @@ export default function WithdrawPage() {
                     <SelectItem value="REJECTED">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
-                  onClick={() => updateStatus(w.id, "COMPLETED")}
-                  size="sm"
-                >
-                  Mark Complete
-                </Button>
               </div>
             </CardContent>
           </Card>
