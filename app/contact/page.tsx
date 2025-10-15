@@ -25,7 +25,7 @@ const ContactUs = () => {
               <p>
                 <span className="font-semibold">Owner</span>
                 <br />
-                Md monir uzzaman sir
+                Md Kamruzzaman sir
               </p>
               <p className="mt-4">
                 <span className="font-semibold">Easytech business world</span>
