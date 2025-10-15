@@ -8,14 +8,14 @@ export default function NoticePage() {
       />
       <div className="max-w-4xl text-sm mx-auto px-6 py-10 text-gray-800 leading-relaxed bg-white my-4">
         <h2 className="text-center text-2xl font-bold mb-8">
-          বিটেক কমিউনিকেশন ওয়াপিসের সম্মানিত কাস্টমার
+          এজিটেক কমিউনিকেশন ওয়াপিসের সম্মানিত কাস্টমার
           <br />
           <span className="text-lg font-semibold">“শর্তাবলী”</span>
         </h2>
 
         <ol className="list-decimal list-inside space-y-3 text-justify">
           <li>
-            কাস্টমার বিটেক অফিসে এসে বাংলাদেশি নাগরিকতা স্বীকৃত হয়ে পণ্য ক্রয়
+            কাস্টমার এজিটেক অফিসে এসে বাংলাদেশি নাগরিকতা স্বীকৃত হয়ে পণ্য ক্রয়
             করতে পারবেন।
           </li>
           <li>
@@ -53,13 +53,13 @@ export default function NoticePage() {
         </ol>
 
         <p className="mt-8 text-sm text-gray-600">
-          বিটেক কমিউনিকেশন সর্বদা গ্রাহকদের উন্নতমানের সেবা প্রদান করে আসছে।
+          এজিটেক কমিউনিকেশন সর্বদা গ্রাহকদের উন্নতমানের সেবা প্রদান করে আসছে।
         </p>
 
         <hr className="my-10 border-gray-300" />
 
         <h2 className="text-center text-2xl font-bold mb-8">
-          বিটেক কমিউনিকেশন ওয়াপিসের সম্মানিত মার্কেটিং প্রফেশনাল
+          এজিটেক কমিউনিকেশন ওয়াপিসের সম্মানিত মার্কেটিং প্রফেশনাল
           <br />
           <span className="text-lg font-semibold">“শর্তাবলী”</span>
         </h2>
@@ -83,13 +83,13 @@ export default function NoticePage() {
             না।
           </li>
           <li>
-            বিটেক কমিউনিকেশন প্রয়োজনে মার্কেটিং প্রফেশনালদের নীতিমালা পরিবর্তন
+            এজিটেক কমিউনিকেশন প্রয়োজনে মার্কেটিং প্রফেশনালদের নীতিমালা পরিবর্তন
             বা সংশোধন করতে পারে।
           </li>
         </ol>
 
         <p className="mt-8 text-sm text-gray-600">
-          বিটেক কমিউনিকেশন সকল মার্কেটিং প্রফেশনালদের উন্নতি ও সহযোগিতায়
+          এজিটেক কমিউনিকেশন সকল মার্কেটিং প্রফেশনালদের উন্নতি ও সহযোগিতায়
           বদ্ধপরিকর।
         </p>
       </div>

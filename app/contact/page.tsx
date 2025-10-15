@@ -27,14 +27,14 @@ const ContactUs = () => {
               <p>
                 <span className="font-semibold">Owner</span>
                 <br />
-                Md. Saiful Islam
+                Md monir uzzaman sir
               </p>
               <p className="mt-4">
                 <span className="font-semibold">
                   Easy Tech Communication OPC
                 </span>
                 <br />
-                KF#315/2, West Joydebpur, Gazipur city corporation, Gazipur.
+                2and floor, new market, konapara, demra,dhaka  1362
               </p>
             </div>
             <div>

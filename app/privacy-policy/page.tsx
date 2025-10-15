@@ -9,7 +9,7 @@ export default function NoticePage() {
       <div className="max-w-4xl mx-auto px-4 py-6 bg-white rounded shadow-sm border border-gray-200 text-sm mt-4">
         {/* Title */}
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-2 leading-snug">
-          বিটেক কমিউনিকেশন জিপিসির সম্মানিত কাস্টমার
+          এজিটেক কমিউনিকেশন জিপিসির সম্মানিত কাস্টমার
         </h1>
 
         {/* Subtitle */}
@@ -18,8 +18,8 @@ export default function NoticePage() {
         {/* List */}
         <ol className="list-decimal list-inside text-gray-800 space-y-3 text-justify leading-relaxed">
           <li>
-            কাস্টমার বিটেক অ্যাকাউন্ট থেকে বাংলাদেশ আইআইজিগুলোর সকল পদ্ধ বা সেবা
-            ফ্রি করবে।
+            কাস্টমার এজিটেক অ্যাকাউন্ট থেকে বাংলাদেশ আইআইজিগুলোর সকল পদ্ধ বা
+            সেবা ফ্রি করবে।
           </li>
           <li>
             আন্তর্জাতিক থেকে পদ্ধ বা সেবা নেয়ার ক্ষেত্রে ৬০% অর্থ পূর্ণ
@@ -68,7 +68,7 @@ export default function NoticePage() {
 
         {/* Footer Note */}
         <p className="mt-6 text-gray-600 text-sm text-center">
-          বিটেক কমিউনিকেশন জিপিসির পক্ষ থেকে আপনাদের সকলের সার্বিক সহযোগিতা
+          এজিটেক কমিউনিকেশন জিপিসির পক্ষ থেকে আপনাদের সকলের সার্বিক সহযোগিতা
           প্রত্যাশা করছি।
         </p>
       </div>
