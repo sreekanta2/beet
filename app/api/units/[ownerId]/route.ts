@@ -32,7 +32,7 @@ export async function GET(
 
     const totalClubs = await prisma.club.count();
 
-    let totalNewBonus = 0; // 🧮 track only new bonuses created
+    let totalNewBonus = 0;
 
     for (const club of clubs) {
       const pattern = generateClubSeries(club.serialNumber).slice(1);

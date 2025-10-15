@@ -80,7 +80,10 @@ export async function GET() {
   try {
     const withdraws = await prisma.withdraw.findMany({
       orderBy: { createdAt: "desc" },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        mobileBankingService: { select: { number: true, name: true } },
+      },
     });
 
     return NextResponse.json({ success: true, withdraws });

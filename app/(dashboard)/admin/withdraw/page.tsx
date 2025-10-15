@@ -63,7 +63,7 @@ export default function WithdrawPage() {
       {withdraws.length === 0 && <p>No withdraw requests yet.</p>}
 
       <div className="grid gap-4">
-        {withdraws.map((w) => (
+        {withdraws.map((w: any) => (
           <Card key={w.id} className="border rounded-xl shadow-sm">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
@@ -73,7 +73,10 @@ export default function WithdrawPage() {
                   Amount: <span className="font-semibold">{w.amount}</span>
                 </p>
                 <p className="text-xs text-gray-500">
-                  Method: {w.method || "N/A"}
+                  Method: {w.mobileBankingService?.name || "N/A"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Number: {w.mobileBankingService?.number || "N/A"}
                 </p>
               </div>
 

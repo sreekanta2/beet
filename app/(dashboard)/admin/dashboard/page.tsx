@@ -108,6 +108,13 @@ export default function AdminPage() {
     }
 
     try {
+      const userId = session?.user?.id; // ✅ Ensure admin/session userId is included
+
+      if (!userId) {
+        toast.error("Session expired. Please log in again.");
+        return;
+      }
+
       if (type === "deposit") {
         const result = await fetch("/api/shoper/transfer", {
           method: "POST",
@@ -116,7 +123,7 @@ export default function AdminPage() {
             sId: selectedUser?.serialNumber,
             amount: Number(points),
             role: selectedUser?.role,
-            userId: session?.user?.id,
+            userId, // ✅ include here
           }),
         });
 
@@ -133,7 +140,11 @@ export default function AdminPage() {
         const result = await fetch("/api/admin/withdraw", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: selectedUser.id, amount: points }),
+          body: JSON.stringify({
+            userId: selectedUser.id, // ✅ target user
+            amount: points,
+            adminId: userId, // ✅ send admin’s ID for audit
+          }),
         });
 
         const data = await result.json();
