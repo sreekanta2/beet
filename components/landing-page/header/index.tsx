@@ -106,7 +106,7 @@ export default function Header() {
                 setMenuOpen(false);
                 handleLogout();
               }}
-              className="text-sm px-3 py-2 border-b text-left hover:bg-red-600 transition"
+              className="text-sm px-3 hidden md:block py-2 border-b text-left hover:bg-red-600 transition"
             >
               Logout
             </button>

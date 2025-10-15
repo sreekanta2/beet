@@ -4,9 +4,7 @@ import Breadcrumb from "@/components/breadcumb";
 const ContactUs = () => {
   return (
     <div>
-      <Breadcrumb
-        items={[{ label: "Home", href: "/" }, { label: "Contact us" }]}
-      />
+      <Breadcrumb items={[{ label: "Contact us" }]} />
 
       <div className="max-w-4xl mx-auto px-6 py-10 text-gray-800 bg-white my-4">
         {/* Breadcrumb */}
@@ -30,22 +28,20 @@ const ContactUs = () => {
                 Md monir uzzaman sir
               </p>
               <p className="mt-4">
-                <span className="font-semibold">
-                  Easy Tech Communication OPC
-                </span>
+                <span className="font-semibold">Easytech business world</span>
                 <br />
                 2and floor, new market, konapara, demra,dhaka  1362
               </p>
             </div>
             <div>
               <p>
-                <span className="font-semibold">Telephone</span>
+                <span className="font-semibold">WhatsApp</span>
                 <br />
                 <a
                   href="tel:+8801911458398"
                   className="text-blue-600 hover:underline"
                 >
-                  +8801911458398
+                  +88017111560077
                 </a>
               </p>
             </div>

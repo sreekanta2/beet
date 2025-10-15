@@ -2,9 +2,8 @@
 import AboutBeetech from "@/components/landing-page/features";
 import Footer from "@/components/landing-page/footer";
 import Header from "@/components/landing-page/header";
-import { Button } from "@/components/ui/button";
-import { Home, LogIn, User } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { Home, LogIn, User, Video } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 const HeroSlides = [
@@ -45,49 +44,62 @@ export default function BeetcHomeReplica() {
   const handleRoute = (url: string) => {
     router.push(url);
   };
+
+  const role = session?.user?.role;
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" }); // redirect to home after logout
+  };
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <Header />
       <main>
-        {/* nav */}
-        {!session?.user && (
-          <div className="md:hidden  space-y-4  py-8   bg-[#e9e9e9] p-3 border-b border-gray-300">
-            <div className="w-full   flex  gap-4">
-              <Button
-                className="bg-[#1e96c8] min-w-[130px]  w-fit  hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
+        <div className="flex justify-end gap-3 max-w-5xl mx-auto p-3">
+          {!session?.user && (
+            <div className="   flex flex-wrap md:hidden gap-2 p-3">
+              {/* Register Button */}
+              <button
                 onClick={() => handleRoute("/auth/sign-up")}
+                className="relative group bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl px-6 py-3 flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/20 overflow-hidden w-full max-w-[150px]"
               >
-                <User size={16} /> Register
-              </Button>
-              <Button
-                className="bg-[#1e96c8]  w-full hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-                onClick={() => handleRoute("/auth/shoper")}
-              >
-                <Home size={16} /> Register Shopper
-              </Button>
-            </div>
-            <div className="w-full  flex gap-4">
-              <Button
-                className="bg-[#1e96c8] min-w-[130px]  w-fit  hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-                onClick={() => handleRoute("/auth/sign-in")}
-              >
-                <LogIn size={16} /> Login
-              </Button>
-              <Button
-                className="bg-[#1e96c8] w-full hover:bg-[#187aa5] text-white font-light md:font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm"
-                onClick={() => handleRoute("/auth/sign-in")}
-              >
-                <LogIn size={16} /> Login Shopper
-              </Button>
-            </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <User size={18} className="relative z-10" />
+                <span className="relative z-10">Register</span>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/30 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              </button>
 
-            <div className="w-full flex justify-center">
-              <Button className="bg-[#1e96c8] min-w-[250px]   hover:bg-[#187aa5] text-white font-medium rounded-sm px-4 py-2 flex items-center gap-2 shadow-sm">
-                Download App
-              </Button>
+              {/* Register Shopper Button */}
+              <button
+                onClick={() => handleRoute("/auth/shoper")}
+                className="relative group bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-xl px-6 py-3 flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/20 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <Home size={18} className="relative z-10" />
+                <span className="relative z-10">Register Shopper</span>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/30 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              </button>
+
+              {/* Login Button */}
+              <button
+                onClick={() => handleRoute("/auth/sign-in")}
+                className="relative group bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-medium rounded-xl px-6 py-3 flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/20 overflow-hidden w-full max-w-[150px]"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <LogIn size={18} className="relative z-10" />
+                <span className="relative z-10">Login</span>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/30 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              </button>
+
+              {/* Watch Tutorial Button */}
+              <button className="relative group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium rounded-xl px-6 py-3 flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white/20 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <Video size={18} className="relative z-10" />
+                <span className="relative z-10">Watch Tutorial</span>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/30 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <div className="block md:hidden space-y-6 px-4 my-6">
           <div className="border bg-primary p-2 rounded-md">
             <Image

@@ -14,10 +14,7 @@ export const registerSchema = z
 
     firstName: z.string().min(2, "First name must be at least 2 characters"),
     lastName: z.string().min(2, "Last name must be at least 2 characters"),
-    telephone: z
-      .string()
-      .min(6, "Telephone must be at least 6 digits")
-      .regex(/^[0-9+\-\s()]+$/, "Invalid telephone number"),
+    telephone: z.string(),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(6, "Please confirm your password"),
     subscribe: z.enum(["yes", "no"]).default("no"),

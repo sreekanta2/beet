@@ -52,7 +52,7 @@ export default function AdminPage() {
   const [openDialog, setOpenDialog] = useState<null | "deposit" | "withdraw">(
     null
   );
-  console.log(selectedUser);
+
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -121,7 +121,7 @@ export default function AdminPage() {
         });
 
         const data = await result.json();
-        console.log(data);
+
         if (data.success) {
           toast.success(`Deposited ${points} points to ${selectedUser.name}`);
           fetchUsers();

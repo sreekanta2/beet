@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         const updatedShoper = await tx.user.update({
           where: { id: receiver.id },
           data: {
-            deposit: { increment: amount },
+            totalBalance: { increment: amount },
           },
           select: { id: true, name: true, deposit: true, role: true },
         });

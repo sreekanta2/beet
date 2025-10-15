@@ -52,6 +52,7 @@ export default function RegisterAccount() {
       subscribe: "no",
       agree: false,
       reference: "",
+      role: "user",
     },
   });
 
