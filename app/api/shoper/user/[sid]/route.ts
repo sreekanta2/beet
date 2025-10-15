@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { sid } = params;
-    console.log(sid);
+
     const user = await prisma.user.findFirst({
       where: { serialNumber: Number(sid) },
       select: {
