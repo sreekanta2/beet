@@ -3,14 +3,14 @@ import AboutBeetech from "@/components/landing-page/features";
 import Footer from "@/components/landing-page/footer";
 import Header from "@/components/landing-page/header";
 import { Home, LogIn, User, Video } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 const HeroSlides = [
-  { src: "/images/ill-think-about-it.png", alt: "Hero 1" },
-  { src: "/images/outlet_button.png", alt: "Hero 2" },
-  { src: "/images/customer_think (2).png", alt: "Hero 3" },
-  { src: "/images/customer_regis_button.png", alt: "Hero 3" },
+  { src: "/images/online.jpg", alt: "Hero 1" },
+  { src: "/images/outlet_button.png.jpg", alt: "Hero 2" },
+
+  { src: "/images/online-img.jpg", alt: "Hero 3" },
 ];
 function HeroCarousel() {
   return (
@@ -45,11 +45,6 @@ export default function BeetcHomeReplica() {
     router.push(url);
   };
 
-  const role = session?.user?.role;
-
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: "/" }); // redirect to home after logout
-  };
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <Header />
@@ -104,14 +99,6 @@ export default function BeetcHomeReplica() {
           <div className="border bg-primary p-2 rounded-md">
             <Image
               src="/images/video-marketing (1).jpg"
-              alt="video "
-              width={600}
-              height={400}
-            />
-          </div>
-          <div className="border bg-primary p-2 rounded-md">
-            <Image
-              src="/images/online-img.jpg"
               alt="video "
               width={600}
               height={400}
