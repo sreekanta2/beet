@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { User } from "@prisma/client";
-import { Loader2, Star, Trophy, UserCheck, Users } from "lucide-react";
+import { Coins, Loader2, Star, Trophy, UserCheck, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 
@@ -42,14 +42,17 @@ export default function Page() {
         </Badge>
       );
   };
-
+  const totalTeamPoints = referredUsers.reduce(
+    (sum: number, user: User) => sum + (user.cachedClubsCount || 0) * 100,
+    0
+  );
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <Breadcrumb items={[{ label: "Referred Users" }]} />
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -82,6 +85,22 @@ export default function Page() {
                 </div>
                 <div className="p-3 bg-white/20 rounded-full">
                   <UserCheck className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg border-0">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-amber-100 text-sm font-medium">
+                    Total Team Points
+                  </p>
+                  <p className="text-3xl font-bold mt-2">{totalTeamPoints}</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-full">
+                  <Coins className="h-6 w-6" />
                 </div>
               </div>
             </CardContent>
@@ -197,6 +216,12 @@ export default function Page() {
                         <TableHead className="font-semibold text-gray-700 py-4 text-xs">
                           User Details
                         </TableHead>
+                        <TableHead className="font-semibold text-gray-700 py-4 text-xs">
+                          Points
+                        </TableHead>
+                        <TableHead className="font-semibold text-gray-700 py-4 text-xs">
+                          Badge
+                        </TableHead>
                         <TableHead className="font-semibold text-gray-700 py-4 text-right text-xs">
                           Status
                         </TableHead>
@@ -231,9 +256,28 @@ export default function Page() {
                                 <p className="font-medium text-gray-900">
                                   {user.name || "Anonymous User"}
                                 </p>
+
                                 <p className="text-xs text-gray-500">
                                   Created:{" "}
                                   {new Date(user?.createdAt).toDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex flex-col md:flex-row items-center space-x-3 text-xs">
+                              <p className="font-medium text-gray-900">
+                                {user.cachedClubsCount * 100 ||
+                                  "Anonymous User"}
+                              </p>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="py-4">
+                            <div className="flex flex-col md:flex-row items-center space-x-3 text-xs">
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {user?.badgeLevel}
                                 </p>
                               </div>
                             </div>

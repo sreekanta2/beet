@@ -3,7 +3,6 @@
 import Breadcrumb from "@/components/breadcumb";
 import {
   ArrowUpCircle,
-  Calculator,
   Edit,
   Plus,
   Shield,
@@ -35,9 +34,6 @@ interface BankService {
   id: number;
   name: string;
   number: string;
-  user?: {
-    totalBalance: number;
-  };
 }
 
 export default function UpayPage() {
@@ -61,8 +57,6 @@ export default function UpayPage() {
   const [loading, setLoading] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
-  const [showCalculator, setShowCalculator] = useState(false);
-  const [calculatorAmount, setCalculatorAmount] = useState("");
 
   const fetchServices = async () => {
     if (!userId) return;
@@ -93,8 +87,6 @@ export default function UpayPage() {
     setWithdrawForm({ amount: 0, pin: "" });
     setWithdrawErrors({});
     setWithdrawOpen(true);
-    setCalculatorAmount("");
-    setShowCalculator(false);
   };
 
   const handleChange = (
@@ -110,49 +102,6 @@ export default function UpayPage() {
       ...prev,
       [name]: name === "amount" ? Number(value) : value,
     }));
-  };
-
-  // Calculate 5% of the amount
-  const calculateFivePercent = (amount: number) => {
-    return amount * 0.05;
-  };
-
-  // Calculate net amount after 5% charge
-  const calculateNetAmount = (amount: number) => {
-    return amount - calculateFivePercent(amount);
-  };
-
-  // Apply 5% calculation to the current amount
-  const applyFivePercent = () => {
-    if (withdrawForm.amount > 0) {
-      const fivePercent = calculateFivePercent(withdrawForm.amount);
-      const netAmount = calculateNetAmount(withdrawForm.amount);
-
-      setWithdrawForm((prev) => ({
-        ...prev,
-        amount: netAmount,
-      }));
-
-      toast.success(`Applied 5% charge: -৳${fivePercent.toFixed(2)}`);
-    }
-  };
-
-  // Quick calculation buttons
-  const quickCalculate = (percentage: number) => {
-    if (calculatorAmount) {
-      const amount = parseFloat(calculatorAmount);
-      if (!isNaN(amount) && amount > 0) {
-        const calculatedAmount = amount * (percentage / 100);
-        setWithdrawForm((prev) => ({
-          ...prev,
-          amount: calculatedAmount,
-        }));
-        setShowCalculator(false);
-        toast.success(
-          `Set amount to ${percentage}%: ৳${calculatedAmount.toFixed(2)}`
-        );
-      }
-    }
   };
 
   const handleSubmit = async () => {
@@ -230,9 +179,11 @@ export default function UpayPage() {
 
       const data = await res.json();
       if (data.success) {
+        // Handle successful withdrawal
         setWithdrawOpen(false);
+        // You might want to refresh user balance or show success message
         toast.success(
-          `Successfully withdrew ৳${withdrawForm.amount} from ${selectedService.name}`
+          `Successfully withdrew ${withdrawForm.amount} from ${selectedService.name}`
         );
       } else {
         setWithdrawErrors({ pin: data.message || "Withdrawal failed" });
@@ -508,7 +459,7 @@ export default function UpayPage() {
       {/* Withdraw Dialog */}
       {withdrawOpen && selectedService && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl h-[80vh] overflow-y-scroll w-full max-w-md shadow-2xl transform transition-all duration-300 scale-100">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl transform transition-all duration-300 scale-100">
             <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Withdraw Funds</h2>
@@ -550,52 +501,11 @@ export default function UpayPage() {
                 </div>
               </div>
 
-              {/* Amount Input with Calculator */}
+              {/* Amount Input */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Amount to Withdraw
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowCalculator(!showCalculator)}
-                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    <Calculator className="w-3 h-3" />
-                    {showCalculator ? "Hide Calculator" : "Show Calculator"}
-                  </button>
-                </div>
-
-                {/* Calculator Section */}
-                {showCalculator && (
-                  <div className="mb-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                    <label className="block text-sm font-medium text-blue-700 mb-2">
-                      Quick Calculate from Amount:
-                    </label>
-                    <div className="flex gap-2 mb-3">
-                      <input
-                        type="number"
-                        placeholder="Enter amount"
-                        value={calculatorAmount}
-                        onChange={(e) => setCalculatorAmount(e.target.value)}
-                        className="flex-1 border border-blue-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[5, 10, 15, 20, 25, 30, 50, 100].map((percent) => (
-                        <button
-                          key={percent}
-                          type="button"
-                          onClick={() => quickCalculate(percent)}
-                          className="bg-white border border-blue-300 text-blue-700 text-xs py-2 rounded-lg hover:bg-blue-100 transition-colors font-medium"
-                        >
-                          {percent}%
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount to Withdraw
+                </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                     ৳
@@ -613,38 +523,6 @@ export default function UpayPage() {
                   <p className="text-red-500 text-xs mt-2 flex items-center">
                     ⚠️ {withdrawErrors.amount}
                   </p>
-                )}
-
-                {/* 5% Calculation Display */}
-                {withdrawForm.amount > 0 && (
-                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="text-gray-600">Gross Amount:</div>
-                      <div className="font-semibold text-right">
-                        ৳{withdrawForm.amount.toFixed(2)}
-                      </div>
-
-                      <div className="text-gray-600">5% Charge:</div>
-                      <div className="font-semibold text-right text-red-600">
-                        -৳{calculateFivePercent(withdrawForm.amount).toFixed(2)}
-                      </div>
-
-                      <div className="text-gray-600 font-medium">
-                        Net Amount:
-                      </div>
-                      <div className="font-bold text-right text-green-600">
-                        ৳{calculateNetAmount(withdrawForm.amount).toFixed(2)}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={applyFivePercent}
-                      className="w-full mt-2 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium"
-                    >
-                      Apply 5% Charge
-                    </button>
-                  </div>
                 )}
               </div>
 
@@ -730,3 +608,215 @@ export default function UpayPage() {
     </div>
   );
 }
+
+// "use client";
+
+// import Breadcrumb from "@/components/breadcumb";
+// import { useSession } from "next-auth/react";
+// import { useEffect, useState } from "react";
+// import toast from "react-hot-toast";
+// import { z } from "zod";
+// import DeleteConfirmDialog from "./components/delete-confirmDialog";
+// import ServiceDialog from "./components/service-dialog";
+// import ServiceList from "./components/serviceList";
+// import StatsCards from "./components/starts-card";
+// import WithdrawDialog from "./components/withdrawDialog";
+
+// const serviceSchema = z.object({
+//   name: z.string().min(1, "Service name is required"),
+//   number: z
+//     .string()
+//     .min(10, "Phone number must be at least 10 digits")
+//     .max(15, "Phone number too long")
+//     .regex(/^[0-9]+$/, "Phone number must contain only digits"),
+// });
+
+// const withdrawSchema = z.object({
+//   amount: z.number().min(1, "Amount must be greater than 0"),
+//   pin: z.string().length(4, "PIN must be 4 digits"),
+// });
+
+// export interface BankService {
+//   id: number;
+//   name: string;
+//   number: string;
+//   user?: { totalBalance?: number };
+// }
+
+// // export default function UpayPage() {
+// //   const { data: session } = useSession();
+// //   const userId = session?.user?.id;
+
+// //   const [services, setServices] = useState<BankService[]>([]);
+// //   const [loading, setLoading] = useState(false);
+// //   const [withdrawLoading, setWithdrawLoading] = useState(false);
+
+// //   const [dialogOpen, setDialogOpen] = useState(false);
+// //   const [withdrawOpen, setWithdrawOpen] = useState(false);
+// //   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+
+// //   const [editingService, setEditingService] = useState<BankService | null>(
+// //     null
+// //   );
+// //   const [selectedService, setSelectedService] = useState<BankService | null>(
+// //     null
+// //   );
+
+// //   const [form, setForm] = useState({ name: "", number: "" });
+// //   const [withdrawForm, setWithdrawForm] = useState({ amount: 0, pin: "" });
+// //   const [errors, setErrors] = useState<{ name?: string; number?: string }>({});
+// //   const [withdrawErrors, setWithdrawErrors] = useState<{
+// //     amount?: string;
+// //     pin?: string;
+// //   }>({});
+
+// //   // 🔹 Fetch all services
+// //   const fetchServices = async () => {
+// //     if (!userId) return;
+// //     const res = await fetch(`/api/mobile-banking?userId=${userId}`);
+// //     const data = await res.json();
+// //     setServices(data);
+// //   };
+
+// //   useEffect(() => {
+// //     fetchServices();
+// //   }, [userId]);
+
+// //   // 🔹 Handle add/update
+// //   const handleSubmit = async () => {
+// //     setErrors({});
+// //     const validation = serviceSchema.safeParse(form);
+// //     if (!validation.success) {
+// //       const fieldErrors: any = {};
+// //       validation.error.errors.forEach(
+// //         (err) => (fieldErrors[err.path[0]] = err.message)
+// //       );
+// //       setErrors(fieldErrors);
+// //       return;
+// //     }
+
+// //     setLoading(true);
+// //     const url = "/api/mobile-banking";
+// //     const payload = { ...form, userId };
+
+// //     try {
+// //       const res = await fetch(url, {
+// //         method: editingService ? "PATCH" : "POST",
+// //         headers: { "Content-Type": "application/json" },
+// //         body: JSON.stringify(
+// //           editingService ? { ...payload, id: editingService.id } : payload
+// //         ),
+// //       });
+
+// //       const data = await res.json();
+// //       if (data.success) {
+// //         toast.success("Service saved successfully");
+// //         setDialogOpen(false);
+// //         fetchServices();
+// //       }
+// //     } finally {
+// //       setLoading(false);
+// //     }
+// //   };
+
+// //   // 🔹 Handle withdraw
+// //   const handleWithdraw = async () => {
+// //     setWithdrawErrors({});
+// //     const validation = withdrawSchema.safeParse(withdrawForm);
+// //     if (!validation.success) {
+// //       const fieldErrors: any = {};
+// //       validation.error.errors.forEach(
+// //         (err) => (fieldErrors[err.path[0]] = err.message)
+// //       );
+// //       setWithdrawErrors(fieldErrors);
+// //       return;
+// //     }
+
+// //     if (!selectedService || !userId) return;
+// //     setWithdrawLoading(true);
+
+// //     try {
+// //       const res = await fetch("/api/users/withdraw", {
+// //         method: "POST",
+// //         headers: { "Content-Type": "application/json" },
+// //         body: JSON.stringify({
+// //           serviceId: selectedService.id,
+// //           amount: withdrawForm.amount,
+// //           pin: withdrawForm.pin,
+// //           userId,
+// //         }),
+// //       });
+
+// //       const data = await res.json();
+// //       if (data.success) {
+// //         toast.success(`Withdrew ${withdrawForm.amount} successfully`);
+// //         setWithdrawOpen(false);
+// //       } else {
+// //         setWithdrawErrors({ pin: data.message || "Withdrawal failed" });
+// //       }
+// //     } finally {
+// //       setWithdrawLoading(false);
+// //     }
+// //   };
+
+// //   // 🔹 Handle delete
+// //   const handleDelete = async (id: number) => {
+// //     setLoading(true);
+// //     await fetch("/api/mobile-banking", {
+// //       method: "DELETE",
+// //       headers: { "Content-Type": "application/json" },
+// //       body: JSON.stringify({ id }),
+// //     });
+// //     toast.success("Service deleted");
+// //     setLoading(false);
+// //     fetchServices();
+// //     setDeleteConfirm(null);
+// //   };
+
+// //   return (
+// //     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6 flex flex-col items-center">
+// //       <div className="w-full max-w-4xl">
+// //         <Breadcrumb items={[{ label: "E-wallet" }]} />
+// //         <StatsCards count={services.length} />
+
+// //         <ServiceList
+// //           services={services}
+// //           openDialog={setDialogOpen}
+// //           setEditingService={setEditingService}
+// //           setDeleteConfirm={setDeleteConfirm}
+// //           setWithdrawOpen={setWithdrawOpen}
+// //           setSelectedService={setSelectedService}
+// //         />
+
+// //         <ServiceDialog
+// //           open={dialogOpen}
+// //           close={() => setDialogOpen(false)}
+// //           form={form}
+// //           setForm={setForm}
+// //           errors={errors}
+// //           handleSubmit={handleSubmit}
+// //           loading={loading}
+// //           editingService={editingService}
+// //         />
+
+// //         <WithdrawDialog
+// //           open={withdrawOpen}
+// //           close={() => setWithdrawOpen(false)}
+// //           withdrawForm={withdrawForm}
+// //           setWithdrawForm={setWithdrawForm}
+// //           withdrawErrors={withdrawErrors}
+// //           handleWithdraw={handleWithdraw}
+// //           withdrawLoading={withdrawLoading}
+// //           selectedService={selectedService}
+// //         />
+
+// //         <DeleteConfirmDialog
+// //           open={!!deleteConfirm}
+// //           onCancel={() => setDeleteConfirm(null)}
+// //           onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
+// //           loading={loading}
+// //         />
+// //       </div>
+// //     </div>
+// //   );
+// // }

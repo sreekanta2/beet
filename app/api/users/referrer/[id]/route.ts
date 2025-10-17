@@ -17,6 +17,7 @@ export async function GET(
         serialNumber: true,
         name: true,
         cachedClubsCount: true,
+        badgeLevel: true,
         createdAt: true,
       },
       orderBy: {
