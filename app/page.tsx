@@ -1,5 +1,4 @@
 "use client";
-import AboutBeetech from "@/components/landing-page/features";
 import Footer from "@/components/landing-page/footer";
 import Header from "@/components/landing-page/header";
 import { Home, LogIn, User, Video } from "lucide-react";
@@ -95,7 +94,7 @@ export default function BeetcHomeReplica() {
             </div>
           )}
         </div>
-        <div className="block md:hidden space-y-6 px-4 my-6">
+        {/* <div className="block md:hidden space-y-6 px-4 my-6">
           <div className="border bg-primary p-2 rounded-md">
             <Image
               src="/images/video-marketing (1).jpg"
@@ -104,9 +103,9 @@ export default function BeetcHomeReplica() {
               height={400}
             />
           </div>
-        </div>
+        </div> */}
         <HeroCarousel />
-        <AboutBeetech />
+        {/* <AboutBeetech /> */}
       </main>
       <Footer />
     </div>

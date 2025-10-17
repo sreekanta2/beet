@@ -1,7 +1,7 @@
 import prisma from "@/lib/db";
-import { TransactionType } from "@prisma/client";
 import { AppError } from "./actions/actions-error-response";
-import { evaluateBadges } from "./evaluate";
+
+import { processReferralAndBadges } from "./processReferalAndBadge";
 
 const BONUS_MULTIPLIER = 200;
 const MAX_BONUS_STEPS = 13;
@@ -141,55 +141,54 @@ export async function processPointsAndClubs(userId: string, earned: number) {
         },
       });
     }
-
+    await processReferralAndBadges(tx, userId, referredById);
     // 8️⃣ Handle referral bonus
-    if (referredById) {
-      // Count existing bonuses for this referredById and newUserId
-      const existingBonus = await tx.pointTransaction.count({
-        where: {
-          userId: referredById,
-          type: TransactionType.REFERRAL_SIGNUP_BONUS,
-          meta: { path: ["newUserId"], equals: userId },
-        },
-      });
+    // if (referredById) {
+    //   // Count existing bonuses for this referredById and newUserId
+    //   const existingBonus = await tx.pointTransaction.count({
+    //     where: {
+    //       userId: referredById,
+    //       type: TransactionType.REFERRAL_SIGNUP_BONUS,
+    //       meta: { path: ["newUserId"], equals: userId },
+    //     },
+    //   });
 
-      const remainingRef = allClubs.length - existingBonus;
+    //   const remainingRef = allClubs.length - existingBonus;
 
-      if (remainingRef > 0) {
-        const totalReferralAmount = remainingRef * 40;
+    //   if (remainingRef > 0) {
+    //     const totalReferralAmount = remainingRef * 40;
 
-        // ✅ 1️⃣ Create all referral transactions at once
-        const referralBonuses = Array.from(
-          { length: remainingRef },
-          (_, i) => ({
-            userId: referredById,
-            amount: 40,
-            type: TransactionType.REFERRAL_SIGNUP_BONUS,
-            meta: { newUserId: userId, index: existingBonus + i + 1 },
-          })
-        );
+    //     // ✅ 1️⃣ Create all referral transactions at once
+    //     const referralBonuses = Array.from(
+    //       { length: remainingRef },
+    //       (_, i) => ({
+    //         userId: referredById,
+    //         amount: 40,
+    //         type: TransactionType.REFERRAL_SIGNUP_BONUS,
+    //         meta: { newUserId: userId, index: existingBonus + i + 1 },
+    //       })
+    //     );
 
-        await tx.pointTransaction.createMany({
-          data: referralBonuses,
-        });
+    //     await tx.pointTransaction.createMany({
+    //       data: referralBonuses,
+    //     });
 
-        // ✅ 2️⃣ Atomically increment user's total balance
-        await tx.user.update({
-          where: { id: referredById },
-          data: {
-            totalBalance: { increment: totalReferralAmount },
-            teamIncome: { increment: totalReferralAmount },
-          },
-        });
+    //     // ✅ 2️⃣ Atomically increment user's total balance
+    //     await tx.user.update({
+    //       where: { id: referredById },
+    //       data: {
+    //         totalBalance: { increment: totalReferralAmount },
+    //         teamIncome: { increment: totalReferralAmount },
+    //       },
+    //     });
 
-        console.log(
-          `✅ Created ${remainingRef} referral bonuses (${totalReferralAmount}) for user ${referredById}`
-        );
-      }
-    }
+    //     console.log(
+    //       `✅ Created ${remainingRef} referral bonuses (${totalReferralAmount}) for user ${referredById}`
+    //     );
+    //   }
+    // }
 
     // 9️⃣ Evaluate badges
-    await evaluateBadges(tx, [userId, referredById].filter(Boolean));
 
     console.log(
       `✅ User ${userId} earned ${earned} points, created ${clubsToCreate} new clubs, and received ${totalNewBonus} total bonus (including retroactive bonuses).`

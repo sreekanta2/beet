@@ -15,6 +15,7 @@ import {
   Shield,
   User,
 } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -44,20 +45,35 @@ export default function ShoperRegisterAccount() {
     startTransition(async () => {
       try {
         const result = await createUser(data);
+
         if (result?.success) {
-          toast.success(
-            "🎉 Registration successful! Welcome to our platform!",
-            {
-              duration: 5000,
-            }
-          );
+          toast.success("🎉 Registration successful! Logging you in...", {
+            duration: 3000,
+          });
+
+          // Auto-login right after registration
+          const loginResult = await signIn("credentials", {
+            redirect: false,
+            telephone: data.telephone, // make sure this matches your NextAuth credentials provider field
+            password: data.password,
+          });
+
+          if (loginResult?.ok) {
+            toast.success("✅ Welcome! Redirecting to your dashboard...");
+            // Optional role-based redirect
+            const redirectUrl = "/shoper/dashboard";
+            window.location.href = redirectUrl;
+          } else {
+            toast.error("Auto login failed. Please log in manually.");
+          }
         } else {
           toast.error(
             result?.message ||
               "Registration failed. Please check your information and try again."
           );
         }
-      } catch {
+      } catch (error) {
+        console.error(error);
         toast.error(
           "Network error. Please check your connection and try again."
         );

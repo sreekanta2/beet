@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { z } from "zod";
 
 const serviceSchema = z.object({
@@ -45,9 +46,7 @@ export default function UpayPage() {
   const [editingService, setEditingService] = useState<BankService | null>(
     null
   );
-  const [selectedService, setSelectedService] = useState<BankService | null>(
-    null
-  );
+  const [selectedService, setSelectedService] = useState<any | null>(null);
   const [form, setForm] = useState({ name: "", number: "" });
   const [withdrawForm, setWithdrawForm] = useState({ amount: 0, pin: "" });
   const [errors, setErrors] = useState<{ name?: string; number?: string }>({});
@@ -63,6 +62,7 @@ export default function UpayPage() {
     if (!userId) return;
     const res = await fetch(`/api/mobile-banking?userId=${userId}`);
     const data = await res.json();
+    console.log(data);
     setServices(data);
   };
 
@@ -182,7 +182,7 @@ export default function UpayPage() {
         // Handle successful withdrawal
         setWithdrawOpen(false);
         // You might want to refresh user balance or show success message
-        alert(
+        toast.success(
           `Successfully withdrew ${withdrawForm.amount} from ${selectedService.name}`
         );
       } else {
@@ -489,6 +489,14 @@ export default function UpayPage() {
                   </span>
                   <span className="text-sm font-mono text-gray-900">
                     {selectedService.number}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-600">
+                    Balance:
+                  </span>
+                  <span className="text-sm font-mono text-gray-900">
+                    {selectedService?.user?.totalBalance}
                   </span>
                 </div>
               </div>

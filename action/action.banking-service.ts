@@ -21,6 +21,18 @@ export async function addService(data: z.infer<typeof mobileBankingSchema>) {
 export async function getServices(userId: string) {
   const services = await prisma.mobileBankingService.findMany({
     where: { userId },
+    select: {
+      id: true,
+      name: true, // optional — add any mobile service fields you want
+      number: true,
+      createdAt: true,
+      user: {
+        select: {
+          id: true,
+          totalBalance: true,
+        },
+      },
+    },
     orderBy: { createdAt: "asc" },
   });
   return services;

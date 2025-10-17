@@ -81,6 +81,13 @@ export async function POST(req: Request) {
           select: { id: true, name: true, deposit: true, role: true },
         });
 
+        // ✅ Reward sender immediately after deduction
+        await tx.user.update({
+          where: { id: userId },
+          data: { totalBalance: { increment: amount * 0.02 } },
+          select: { id: true, name: true, deposit: true, role: true },
+        });
+
         return {
           success: true,
           message: "Deposit sent to shoper successfully.",

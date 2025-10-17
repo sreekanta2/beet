@@ -20,6 +20,7 @@ enum Role {
 enum BadgeLevel {
   NONE
   SILVER
+  PLATINUM
   GOLDEN
   DIAMOND
 }

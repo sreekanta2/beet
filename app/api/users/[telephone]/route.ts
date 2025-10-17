@@ -2,6 +2,13 @@ import prisma from "@/lib/db";
 import { NextResponse } from "next/server";
 
 const DAILY_CLUB_INCOME_RATE = 0.1; // per club per day
+const ROYALTY_RATES: Record<string, number> = {
+  NONE: 0,
+  SILVER: 100,
+  GOLDEN: 500,
+  PLATINUM: 2100,
+  DIAMOND: 8100,
+};
 
 export async function GET(
   req: Request,
@@ -23,19 +30,12 @@ export async function GET(
         clubsBonus: true,
         deposit: true,
         serialNumber: true,
-
-        withdraw: {
-          select: {
-            amount: true,
-            status: true,
-          },
-        },
+        badgeLevel: true, // 👈 make sure badgeLevel is selected
+        withdraw: { select: { amount: true, status: true } },
         clubs: { select: { id: true } },
         createdAt: true,
         referralCode: true,
-        referrals: {
-          select: { id: true },
-        },
+        referrals: { select: { id: true } },
       },
     });
 
@@ -50,29 +50,39 @@ export async function GET(
 
     let newTotalBalance = user.totalBalance;
     let newClubsIncome = user.clubsIncome;
+    let newRoyaltyIncome = user.royaltyIncome;
 
     if (daysPassed >= 1) {
+      // --- 1️⃣ Club income ---
       const clubCount = user.clubs.length;
-      const dailyIncome = clubCount * DAILY_CLUB_INCOME_RATE;
-      const totalGain = dailyIncome * daysPassed;
+      const dailyClubIncome = clubCount * DAILY_CLUB_INCOME_RATE;
+      const totalClubGain = dailyClubIncome * daysPassed;
 
-      newClubsIncome += totalGain;
-      newTotalBalance += totalGain;
+      // --- 2️⃣ Royalty income ---
+      const royaltyRate = ROYALTY_RATES[user.badgeLevel] || 0;
+      const totalRoyaltyGain = royaltyRate * daysPassed;
+
+      newClubsIncome += totalClubGain;
+      newRoyaltyIncome += totalRoyaltyGain;
+      newTotalBalance += totalClubGain + totalRoyaltyGain;
 
       await prisma.user.update({
         where: { telephone },
         data: {
           totalBalance: parseFloat(newTotalBalance.toFixed(6)),
           clubsIncome: parseFloat(newClubsIncome.toFixed(6)),
+          royaltyIncome: parseFloat(newRoyaltyIncome.toFixed(6)),
           lastIncomeUpdate: now,
         },
       });
     }
 
-    // Per-second income based on 24-hour distribution
+    // --- Per-second income calculation ---
     const clubCount = user.clubs.length;
-    const totalDailyIncome = clubCount * DAILY_CLUB_INCOME_RATE;
-    const perSecondIncome = totalDailyIncome / 86400; // 24h = 86400s
+    const totalDailyIncome =
+      clubCount * DAILY_CLUB_INCOME_RATE +
+      (ROYALTY_RATES[user.badgeLevel] || 0);
+    const perSecondIncome = totalDailyIncome / 86400; // 24 hours = 86400 seconds
 
     return NextResponse.json({
       success: true,
@@ -80,6 +90,7 @@ export async function GET(
         ...user,
         totalBalance: newTotalBalance,
         clubsIncome: newClubsIncome,
+        royaltyIncome: newRoyaltyIncome,
         perSecondIncome,
       },
     });

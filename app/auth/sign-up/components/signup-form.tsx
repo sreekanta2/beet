@@ -21,6 +21,7 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -106,20 +107,35 @@ export default function RegisterAccount() {
     startTransition(async () => {
       try {
         const result = await createUser(data);
+
         if (result?.success) {
-          toast.success(
-            "🎉 Registration successful! Welcome to our platform!",
-            {
-              duration: 5000,
-            }
-          );
+          toast.success("🎉 Registration successful! Logging you in...", {
+            duration: 3000,
+          });
+
+          // Auto login
+          const loginResult = await signIn("credentials", {
+            redirect: false,
+            telephone: data.telephone,
+            password: data.password,
+          });
+
+          if (loginResult?.ok) {
+            toast.success("✅ Welcome! Redirecting to your dashboard...");
+            window.location.href = `${data?.role}/dashboard`; // redirect after login success
+          } else {
+            toast.error(
+              "Login failed after registration. Please login manually."
+            );
+          }
         } else {
           toast.error(
             result?.message ||
               "Registration failed. Please check your information and try again."
           );
         }
-      } catch {
+      } catch (error) {
+        console.error(error);
         toast.error(
           "Network error. Please check your connection and try again."
         );
