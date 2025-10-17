@@ -109,10 +109,6 @@ export default function RegisterAccount() {
         const result = await createUser(data);
 
         if (result?.success) {
-          toast.success("🎉 Registration successful! Logging you in...", {
-            duration: 3000,
-          });
-
           // Auto login
           const loginResult = await signIn("credentials", {
             redirect: false,

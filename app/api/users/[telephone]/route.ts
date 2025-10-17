@@ -30,7 +30,7 @@ export async function GET(
         clubsBonus: true,
         deposit: true,
         serialNumber: true,
-        badgeLevel: true, // 👈 make sure badgeLevel is selected
+        badgeLevel: true,
         withdraw: { select: { amount: true, status: true } },
         clubs: { select: { id: true } },
         createdAt: true,
@@ -44,54 +44,48 @@ export async function GET(
     }
 
     const now = new Date();
-    const lastUpdate = user.lastIncomeUpdate || new Date(user.createdAt);
-    const diffInMs = now.getTime() - lastUpdate.getTime();
-    const daysPassed = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const lastUpdate = user.lastIncomeUpdate || user.createdAt;
+    const diffInMs = now.getTime() - new Date(lastUpdate).getTime();
+    const diffInSeconds = diffInMs / 1000;
+    const daysPassed = Math.floor(diffInSeconds / 86400);
 
     let newTotalBalance = user.totalBalance;
     let newClubsIncome = user.clubsIncome;
-    let newRoyaltyIncome = user.royaltyIncome;
 
+    const clubCount = user.clubs.length;
+    const dailyClubIncome = clubCount * DAILY_CLUB_INCOME_RATE;
+
+    // 🧩 1️⃣ Daily update (if at least 1 full day passed)
     if (daysPassed >= 1) {
-      // --- 1️⃣ Club income ---
-      const clubCount = user.clubs.length;
-      const dailyClubIncome = clubCount * DAILY_CLUB_INCOME_RATE;
       const totalClubGain = dailyClubIncome * daysPassed;
-
-      // --- 2️⃣ Royalty income ---
-      const royaltyRate = ROYALTY_RATES[user.badgeLevel] || 0;
-      const totalRoyaltyGain = royaltyRate * daysPassed;
-
       newClubsIncome += totalClubGain;
-      newRoyaltyIncome += totalRoyaltyGain;
-      newTotalBalance += totalClubGain + totalRoyaltyGain;
+      newTotalBalance += totalClubGain;
 
       await prisma.user.update({
         where: { telephone },
         data: {
           totalBalance: parseFloat(newTotalBalance.toFixed(6)),
           clubsIncome: parseFloat(newClubsIncome.toFixed(6)),
-          royaltyIncome: parseFloat(newRoyaltyIncome.toFixed(6)),
           lastIncomeUpdate: now,
         },
       });
     }
 
-    // --- Per-second income calculation ---
-    const clubCount = user.clubs.length;
-    const totalDailyIncome =
-      clubCount * DAILY_CLUB_INCOME_RATE +
-      (ROYALTY_RATES[user.badgeLevel] || 0);
-    const perSecondIncome = totalDailyIncome / 86400; // 24 hours = 86400 seconds
+    // 🧩 2️⃣ Per-second live income (after last full update)
+    const perSecondIncome = dailyClubIncome / 86400; // per second rate
+    const earnedSinceLastUpdate =
+      newClubsIncome + diffInSeconds * perSecondIncome;
+    const totalWithLive = newTotalBalance + diffInSeconds * perSecondIncome;
 
     return NextResponse.json({
       success: true,
       user: {
         ...user,
-        totalBalance: newTotalBalance,
-        clubsIncome: newClubsIncome,
-        royaltyIncome: newRoyaltyIncome,
-        perSecondIncome,
+        totalBalance: parseFloat(totalWithLive.toFixed(6)),
+        clubsIncome: parseFloat(earnedSinceLastUpdate.toFixed(6)),
+        perSecondIncome: parseFloat(perSecondIncome.toFixed(12)),
+        diffInSeconds: Math.floor(diffInSeconds),
+        updatedAt: now,
       },
     });
   } catch (error) {

@@ -91,7 +91,7 @@ export default function WithdrawPage() {
                   <SelectContent>
                     <SelectItem value="PENDING">Pending</SelectItem>
                     <SelectItem value="COMPLETED">Completed</SelectItem>
-                    <SelectItem value="REJECTED">Rejected</SelectItem>
+                    {/* <SelectItem value="REJECTED">Rejected</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>

@@ -7,7 +7,9 @@ export async function GET(
 ) {
   try {
     const { id } = params || "";
-
+    if (!id) {
+      return NextResponse.json({ error: "UserId required" }, { status: 403 });
+    }
     const user = await prisma.user.findUnique({
       where: { id },
       select: {

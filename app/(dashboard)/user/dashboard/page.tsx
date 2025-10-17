@@ -17,7 +17,6 @@ import {
   MessageCircle,
   Share2,
   Star,
-  TrendingUp,
   Trophy,
   Twitter,
   User,
@@ -356,7 +355,7 @@ export default function AccountDashboard() {
               </CardContent>
             </Card>
 
-            {/* Promo Cards */}
+            {/* Promo Cards
             <Card className="shadow-2xl border-0 overflow-hidden">
               <CardContent className="p-0">
                 <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3">
@@ -382,7 +381,7 @@ export default function AccountDashboard() {
                   </p>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card className="shadow-2xl border-0 overflow-hidden">
               <CardContent className="p-0">

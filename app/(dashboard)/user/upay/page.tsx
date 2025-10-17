@@ -3,6 +3,7 @@
 import Breadcrumb from "@/components/breadcumb";
 import {
   ArrowUpCircle,
+  Calculator,
   Edit,
   Plus,
   Shield,
@@ -34,6 +35,9 @@ interface BankService {
   id: number;
   name: string;
   number: string;
+  user?: {
+    totalBalance: number;
+  };
 }
 
 export default function UpayPage() {
@@ -57,6 +61,8 @@ export default function UpayPage() {
   const [loading, setLoading] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [calculatorAmount, setCalculatorAmount] = useState("");
 
   const fetchServices = async () => {
     if (!userId) return;
@@ -87,6 +93,8 @@ export default function UpayPage() {
     setWithdrawForm({ amount: 0, pin: "" });
     setWithdrawErrors({});
     setWithdrawOpen(true);
+    setCalculatorAmount("");
+    setShowCalculator(false);
   };
 
   const handleChange = (
@@ -102,6 +110,49 @@ export default function UpayPage() {
       ...prev,
       [name]: name === "amount" ? Number(value) : value,
     }));
+  };
+
+  // Calculate 5% of the amount
+  const calculateFivePercent = (amount: number) => {
+    return amount * 0.05;
+  };
+
+  // Calculate net amount after 5% charge
+  const calculateNetAmount = (amount: number) => {
+    return amount - calculateFivePercent(amount);
+  };
+
+  // Apply 5% calculation to the current amount
+  const applyFivePercent = () => {
+    if (withdrawForm.amount > 0) {
+      const fivePercent = calculateFivePercent(withdrawForm.amount);
+      const netAmount = calculateNetAmount(withdrawForm.amount);
+
+      setWithdrawForm((prev) => ({
+        ...prev,
+        amount: netAmount,
+      }));
+
+      toast.success(`Applied 5% charge: -৳${fivePercent.toFixed(2)}`);
+    }
+  };
+
+  // Quick calculation buttons
+  const quickCalculate = (percentage: number) => {
+    if (calculatorAmount) {
+      const amount = parseFloat(calculatorAmount);
+      if (!isNaN(amount) && amount > 0) {
+        const calculatedAmount = amount * (percentage / 100);
+        setWithdrawForm((prev) => ({
+          ...prev,
+          amount: calculatedAmount,
+        }));
+        setShowCalculator(false);
+        toast.success(
+          `Set amount to ${percentage}%: ৳${calculatedAmount.toFixed(2)}`
+        );
+      }
+    }
   };
 
   const handleSubmit = async () => {
@@ -179,11 +230,9 @@ export default function UpayPage() {
 
       const data = await res.json();
       if (data.success) {
-        // Handle successful withdrawal
         setWithdrawOpen(false);
-        // You might want to refresh user balance or show success message
         toast.success(
-          `Successfully withdrew ${withdrawForm.amount} from ${selectedService.name}`
+          `Successfully withdrew ৳${withdrawForm.amount} from ${selectedService.name}`
         );
       } else {
         setWithdrawErrors({ pin: data.message || "Withdrawal failed" });
@@ -459,7 +508,7 @@ export default function UpayPage() {
       {/* Withdraw Dialog */}
       {withdrawOpen && selectedService && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl transform transition-all duration-300 scale-100">
+          <div className="bg-white rounded-2xl h-[80vh] overflow-y-scroll w-full max-w-md shadow-2xl transform transition-all duration-300 scale-100">
             <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Withdraw Funds</h2>
@@ -501,11 +550,52 @@ export default function UpayPage() {
                 </div>
               </div>
 
-              {/* Amount Input */}
+              {/* Amount Input with Calculator */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount to Withdraw
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Amount to Withdraw
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowCalculator(!showCalculator)}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    <Calculator className="w-3 h-3" />
+                    {showCalculator ? "Hide Calculator" : "Show Calculator"}
+                  </button>
+                </div>
+
+                {/* Calculator Section */}
+                {showCalculator && (
+                  <div className="mb-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <label className="block text-sm font-medium text-blue-700 mb-2">
+                      Quick Calculate from Amount:
+                    </label>
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="number"
+                        placeholder="Enter amount"
+                        value={calculatorAmount}
+                        onChange={(e) => setCalculatorAmount(e.target.value)}
+                        className="flex-1 border border-blue-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[5, 10, 15, 20, 25, 30, 50, 100].map((percent) => (
+                        <button
+                          key={percent}
+                          type="button"
+                          onClick={() => quickCalculate(percent)}
+                          className="bg-white border border-blue-300 text-blue-700 text-xs py-2 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                        >
+                          {percent}%
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                     ৳
@@ -523,6 +613,38 @@ export default function UpayPage() {
                   <p className="text-red-500 text-xs mt-2 flex items-center">
                     ⚠️ {withdrawErrors.amount}
                   </p>
+                )}
+
+                {/* 5% Calculation Display */}
+                {withdrawForm.amount > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="text-gray-600">Gross Amount:</div>
+                      <div className="font-semibold text-right">
+                        ৳{withdrawForm.amount.toFixed(2)}
+                      </div>
+
+                      <div className="text-gray-600">5% Charge:</div>
+                      <div className="font-semibold text-right text-red-600">
+                        -৳{calculateFivePercent(withdrawForm.amount).toFixed(2)}
+                      </div>
+
+                      <div className="text-gray-600 font-medium">
+                        Net Amount:
+                      </div>
+                      <div className="font-bold text-right text-green-600">
+                        ৳{calculateNetAmount(withdrawForm.amount).toFixed(2)}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={applyFivePercent}
+                      className="w-full mt-2 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium"
+                    >
+                      Apply 5% Charge
+                    </button>
+                  </div>
                 )}
               </div>
 

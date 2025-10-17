@@ -35,18 +35,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔹 Use transaction for safety
-    const [transaction] = await prisma.$transaction([
-      prisma.user.update({
-        where: { id: userId },
-        data: {
-          totalBalance: { decrement: amount },
-        },
-      }),
+    // 💰 Apply 5% withdrawal fee
+    const feeRate = 0.05;
+    const feeAmount = amount * feeRate;
+    const finalAmount = amount - feeAmount;
+
+    // 🔹 Use transaction for consistency
+    const [withdraw, pointTx] = await prisma.$transaction([
       prisma.withdraw.create({
         data: {
           userId,
-          amount: amount,
+          amount: finalAmount, // ✅ Amount user receives
           status: "PENDING",
           mobileBankingServiceId: serviceId,
         },
@@ -54,18 +53,30 @@ export async function POST(req: Request) {
       prisma.pointTransaction.create({
         data: {
           userId,
-          amount: amount,
+          amount: finalAmount,
           type: TransactionType.TRANSFER_OUT,
-          meta: { note: "User withdrawal request" },
+          meta: {
+            note: `User withdrawal request (৳${amount} - ৳${feeAmount.toFixed(
+              2
+            )} fee)`,
+          },
+        },
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          totalBalance: { decrement: amount }, // ✅ Deduct full withdrawal request
         },
       }),
     ]);
 
     return NextResponse.json({
       success: true,
-      message: "Withdrawal successful",
-
-      transaction,
+      message: `Withdrawal of ৳${finalAmount.toFixed(
+        2
+      )} submitted (Fee ৳${feeAmount.toFixed(2)})`,
+      withdraw,
+      pointTx,
     });
   } catch (error) {
     console.error("Withdraw error:", error);

@@ -34,7 +34,7 @@ export default function PointsDashboard() {
     fetcher,
     { revalidateOnFocus: false }
   );
-
+  console.log(error);
   const user = data?.user;
 
   const [liveClubIncome, setLiveClubIncome] = useState(0);
@@ -44,15 +44,8 @@ export default function PointsDashboard() {
   useEffect(() => {
     if (!user) return;
 
-    const lastUpdate = new Date(user.lastIncomeUpdate).getTime();
-    const now = Date.now();
-
-    const elapsedSeconds = Math.floor((now - lastUpdate) / 1000);
-
-    let currentClubIncome =
-      user?.clubsIncome + elapsedSeconds * user.perSecondIncome;
-    let currentTotalBalance =
-      user.totalBalance + elapsedSeconds * user.perSecondIncome;
+    let currentClubIncome = user?.clubsIncome + user.perSecondIncome;
+    let currentTotalBalance = user.totalBalance + user.perSecondIncome;
 
     setLiveClubIncome(currentClubIncome);
     setLiveTotalBalance(currentTotalBalance);
@@ -66,7 +59,7 @@ export default function PointsDashboard() {
 
     return () => clearInterval(interval);
   }, [user]);
-
+  console.log(user);
   if (error)
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
