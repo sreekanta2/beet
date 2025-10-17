@@ -2,7 +2,6 @@
 
 import { Home, LogIn, LogOut, User, Video } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useState } from "react";
@@ -120,9 +119,6 @@ const Footer = () => {
                 {" "}
                 Easytech business world {new Date().getFullYear()}
               </div>
-              <Link href={"https://srikanto.site"} target="_blank">
-                Made
-              </Link>
             </div>
           </div>
         </div>
