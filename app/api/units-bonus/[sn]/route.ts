@@ -22,7 +22,7 @@ export async function GET(
 
     const bonusClubs = await prisma.clubsBonus.findMany({
       where: { clubId: clubs[0].id },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     });
 
     return NextResponse.json({

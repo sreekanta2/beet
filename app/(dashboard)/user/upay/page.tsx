@@ -150,6 +150,10 @@ export default function UpayPage() {
   };
 
   const handleWithdraw = async () => {
+    if (withdrawForm.amount < 200) {
+      toast.error("Minium withdraw amount 200 ");
+      return;
+    }
     setWithdrawErrors({});
     const validation = withdrawSchema.safeParse(withdrawForm);
     if (!validation.success) {
@@ -514,6 +518,7 @@ export default function UpayPage() {
                     type="number"
                     name="amount"
                     placeholder="0.00"
+                    min={200}
                     value={withdrawForm.amount || ""}
                     onChange={handleWithdrawChange}
                     className="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"

@@ -6,10 +6,10 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 const HeroSlides = [
-  { src: "/images/online.jpg", alt: "Hero 1" },
-  { src: "/images/outlet_button.png.jpg", alt: "Hero 2" },
+  { src: "/images/businessworld.jpg", alt: "Hero 1" },
+  { src: "/images/easytect.jpg", alt: "Hero 2" },
 
-  { src: "/images/online-img.jpg", alt: "Hero 3" },
+  { src: "/images/marketing.jpg", alt: "Hero 3" },
 ];
 function HeroCarousel() {
   return (
