@@ -91,28 +91,6 @@ export default function ShoperRegisterAccount() {
         <div className="max-w-2xl mx-auto">
           {/* Header Card */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="w-8 h-8 text-blue-600" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Create Your Account
-              </h1>
-              <p className="text-gray-600">
-                Join thousands of shopers and start your journey today
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center text-sm text-gray-600 mb-8">
-              <span>Already have an account?</span>
-              <a
-                href="/auth/sign-in"
-                className="ml-2 text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
-              >
-                Sign in here
-              </a>
-            </div>
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Localization Section */}
               <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
@@ -407,6 +385,15 @@ export default function ShoperRegisterAccount() {
                 </button>
               </div>
             </form>
+          </div>
+          <div className="flex items-center justify-center text-sm text-gray-600 mb-8">
+            <span>Already have an account?</span>
+            <a
+              href="/auth/sign-in"
+              className="ml-2 text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
+            >
+              Sign in here
+            </a>
           </div>
 
           {/* Security Note */}
