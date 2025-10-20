@@ -1,30 +1,60 @@
+import type { Prisma } from "@prisma/client";
 import { BadgeLevel } from "@prisma/client";
 
-import type { Prisma } from "@prisma/client";
+// ---------------- Configuration ----------------
+const BATCH_SIZE = 4;
 
 export async function evaluateBadges(
   tx: Prisma.TransactionClient,
-  userIds: (string | null)[]
+  userIds: (string | null)[],
+  userId: string
 ): Promise<void> {
+  // ---------------- 1️⃣ Badge Evaluation for referrers ----------------
   for (const uid of userIds.filter(Boolean) as string[]) {
     const user = await tx.user.findUnique({
       where: { id: uid },
-      include: { referrals: true },
+      include: {
+        referrals: {
+          select: { id: true, badgeLevel: true, cachedClubsCount: true },
+        },
+      },
     });
+
     if (!user) continue;
+    const referrals = user.referrals || [];
+    let newBadge: BadgeLevel = user.badgeLevel;
 
-    const referralCount = user.referrals?.length ?? 0;
-    const referralClubsDone = await tx.club.count({
-      where: { ownerId: { in: user.referrals.map((r) => r.id) } },
-    });
+    // --- NONE → SILVER ---
+    if (user.badgeLevel === "NONE" && referrals.length >= BATCH_SIZE) {
+      const allQualified = referrals
+        .slice(0, BATCH_SIZE)
+        .every((r) => r.cachedClubsCount >= 50);
+      if (allQualified) newBadge = "SILVER";
+    }
 
-    let newBadge: BadgeLevel = BadgeLevel.NONE;
-    if (referralCount >= 4 && referralClubsDone >= 50)
-      newBadge = BadgeLevel.SILVER;
-    if (referralCount >= 4 && referralClubsDone >= 200)
-      newBadge = BadgeLevel.GOLDEN;
-    if (referralCount >= 4 && referralClubsDone >= 400)
-      newBadge = BadgeLevel.DIAMOND;
+    // --- SILVER → GOLDEN ---
+    else if (user.badgeLevel === "SILVER" && referrals.length >= BATCH_SIZE) {
+      const allSilver = referrals
+        .slice(0, BATCH_SIZE)
+        .every((r) => r.badgeLevel === "SILVER");
+      if (allSilver) newBadge = "GOLDEN";
+    }
+
+    // --- GOLDEN → PLATINUM ---
+    else if (user.badgeLevel === "GOLDEN" && referrals.length >= BATCH_SIZE) {
+      const allGolden = referrals
+        .slice(0, BATCH_SIZE)
+        .every((r) => r.badgeLevel === "GOLDEN");
+      if (allGolden) newBadge = "PLATINUM";
+    }
+
+    // --- PLATINUM → DIAMOND ---
+    else if (user.badgeLevel === "PLATINUM" && referrals.length >= BATCH_SIZE) {
+      const allPlatinum = referrals
+        .slice(0, BATCH_SIZE)
+        .every((r) => r.badgeLevel === "PLATINUM");
+      if (allPlatinum) newBadge = "DIAMOND";
+    }
 
     if (newBadge !== user.badgeLevel) {
       await tx.user.update({
