@@ -47,7 +47,7 @@ export default function AccountDashboard() {
   const handleRoute = (url: string) => {
     router.push(url);
   };
-
+  console.log(data);
   // Generate referral URL
   const referralCode = data?.user?.referralCode || data?.user?.serialNumber;
   useEffect(() => {

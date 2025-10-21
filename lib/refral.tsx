@@ -1,7 +1,5 @@
 import prisma from "@/lib/db";
-import { AppError } from "./actions/actions-error-response";
-
-import { processReferralAndBadges } from "./processReferalAndBadge";
+import { NextResponse } from "next/server";
 
 const BONUS_MULTIPLIER = 200;
 const MAX_BONUS_STEPS = 13;
@@ -39,8 +37,10 @@ export async function processPointsAndClubs(userId: string, earned: number) {
 
     const { deposit, cachedClubsCount, referredById } = user;
     const remainingSlots = MAX_CLUBS - cachedClubsCount;
-    if (remainingSlots <= 0)
-      throw new AppError("You’ve reached your club limit.");
+    console.log({ remainingSlots });
+    if (remainingSlots <= 0) {
+      return NextResponse.json({ error: "Limit the clubs." }, { status: 400 });
+    }
 
     const possibleClubs = Math.floor(deposit / CLUB_COST);
     const clubsToCreate = Math.min(possibleClubs, remainingSlots);
@@ -140,7 +140,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
         },
       });
     }
-    await processReferralAndBadges(tx, userId, referredById);
+    // await processReferralAndBadges(tx, userId, referredById);
 
     console.log(
       `✅ User ${userId} earned ${earned} points, created ${clubsToCreate} new clubs, and received ${totalNewBonus} total bonus (including retroactive bonuses).`

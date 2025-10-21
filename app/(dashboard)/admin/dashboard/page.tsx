@@ -44,7 +44,6 @@ import { toast } from "react-hot-toast";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [message, setMessage] = useState<string | null>(null);
   const { data: session } = useSession();
   const [filterId, setFilterId] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -128,12 +127,12 @@ export default function AdminPage() {
         });
 
         const data = await result.json();
-
+        console.log(data);
         if (data.success) {
           toast.success(`Deposited ${points} points to ${selectedUser.name}`);
           fetchUsers();
         } else {
-          toast.error(data?.message || "Failed to deposit points");
+          toast.error(data?.error || "Failed to deposit points");
         }
       } else {
         // Withdraw logic

@@ -37,7 +37,7 @@ export async function processReferralAndBadges(
   if (referrerIds.length > 0 && userId) {
     // 🏅 Evaluate badges for all referrers
     await refBonus(tx, referrerIds, userId);
-    await evaluateBadges(tx, referrerIds, userId);
+    await evaluateBadges(tx, referrerIds);
   }
 }
 
