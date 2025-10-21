@@ -62,7 +62,7 @@ export default function UpayPage() {
     if (!userId) return;
     const res = await fetch(`/api/mobile-banking?userId=${userId}`);
     const data = await res.json();
-    console.log(data);
+
     setServices(data);
   };
 
@@ -518,7 +518,7 @@ export default function UpayPage() {
                     type="number"
                     name="amount"
                     placeholder="0.00"
-                    min={200}
+                    min={50}
                     value={withdrawForm.amount || ""}
                     onChange={handleWithdrawChange}
                     className="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
