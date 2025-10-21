@@ -90,8 +90,7 @@ export async function GET(
         // 🧩 6️⃣ Apply daily club + royalty income (if full days passed)
         if (daysPassed >= 1) {
           const totalClubGain = dailyClubIncome * daysPassed;
-          const totalRoyaltyGain =
-            ROYALTY_INCOME[user.badgeLevel] * 4 * daysPassed;
+          const totalRoyaltyGain = ROYALTY_INCOME[user.badgeLevel] * daysPassed;
 
           newClubsIncome += totalClubGain;
           newRoyaltyIncome += totalRoyaltyGain;
