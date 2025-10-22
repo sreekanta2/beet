@@ -8,7 +8,7 @@ export const getAllUsers = async (filterOptions: SearchParams = {}) => {
     limit:
       filterOptions?.limit !== undefined ? String(filterOptions.limit) : "10",
   });
-
+  console.log(query.toString());
   if (filterOptions.search) {
     query.set("search", filterOptions.search);
   }

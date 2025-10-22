@@ -37,7 +37,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
 
     const { deposit, cachedClubsCount, referredById } = user;
     const remainingSlots = MAX_CLUBS - cachedClubsCount;
-    console.log({ remainingSlots });
+
     if (remainingSlots <= 0) {
       return NextResponse.json({ error: "Limit the clubs." }, { status: 400 });
     }

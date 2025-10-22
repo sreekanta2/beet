@@ -48,6 +48,7 @@ export async function GET(req: Request) {
         name: true,
         serialNumber: true,
         telephone: true,
+        deposit: true,
         email: true,
         role: true,
         createdAt: true,

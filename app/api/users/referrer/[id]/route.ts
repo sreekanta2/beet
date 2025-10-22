@@ -6,28 +6,61 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
+
   try {
-    // Fetch all users who have a referrer
+    // 🧩 Fetch user referral tree up to 4 levels
     const referredUsers = await prisma.user.findMany({
-      where: {
-        referredById: id,
-      },
+      where: { referredById: id },
       select: {
         id: true,
-        serialNumber: true,
         name: true,
+        serialNumber: true,
         cachedClubsCount: true,
         badgeLevel: true,
         createdAt: true,
+
+        // Level 2
+        referrals: {
+          select: {
+            id: true,
+            name: true,
+            serialNumber: true,
+            cachedClubsCount: true,
+            badgeLevel: true,
+            createdAt: true,
+
+            // Level 3
+            referrals: {
+              select: {
+                id: true,
+                name: true,
+                serialNumber: true,
+                cachedClubsCount: true,
+                badgeLevel: true,
+                createdAt: true,
+
+                // Level 4
+                referrals: {
+                  select: {
+                    id: true,
+                    name: true,
+                    serialNumber: true,
+                    cachedClubsCount: true,
+                    badgeLevel: true,
+                    createdAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({ referredUsers }, { status: 200 });
-  } catch (err) {
-    console.error("Get referred users error:", err);
+  } catch (error) {
+    console.error("Error fetching referral tree:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

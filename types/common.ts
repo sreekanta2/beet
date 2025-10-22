@@ -6,8 +6,8 @@ export interface SearchParams {
   serialNumber?: string;
   sortBy?: "rating" | "experience" | "fee" | "name";
   sortOrder?: "asc" | "desc";
-  page?: string;
-  limit?: string;
+  page?: string | number;
+  limit?: string | number;
 }
 export interface ShopperProfileInput {
   id?: string;

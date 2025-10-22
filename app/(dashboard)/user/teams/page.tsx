@@ -3,49 +3,51 @@
 import Breadcrumb from "@/components/breadcumb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { User } from "@prisma/client";
-import { Coins, Loader2, Star, Trophy, UserCheck, Users } from "lucide-react";
+import { Coins, Loader2, Trophy, UserCheck, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
+import ReferralTree from "./components/refuser";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Page() {
   const { data: session } = useSession();
+
   const { data, error, isLoading, mutate } = useSWR(
-    `/api/users/referrer/${session?.user?.id}`,
+    session?.user?.id ? `/api/users/referrer/${session.user.id}` : null,
     fetcher
   );
 
-  const referredUsers = data?.referredUsers || [];
-  const totalReferrals = referredUsers.length;
-
-  const getStatusBadge = (index: number) => {
-    if (index === 0)
-      return (
-        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500">
-          New
-        </Badge>
-      );
-    if (index > 0)
-      return (
-        <Badge className="bg-gradient-to-r from-green-500 to-emerald-600">
-          Active
-        </Badge>
-      );
+  // 🧩 Recursive flatten function for all 4 levels
+  const flattenReferrals = (users: any[]): any[] => {
+    let result: any[] = [];
+    for (const user of users) {
+      result.push(user);
+      if (user.referrals && user.referrals.length > 0) {
+        result = result.concat(flattenReferrals(user.referrals));
+      }
+    }
+    return result;
   };
-  const totalTeamPoints = referredUsers.reduce(
-    (sum: number, user: User) => sum + (user.cachedClubsCount || 0) * 100,
+
+  // ✅ Flatten all nested referrals (up to 4 levels)
+  const allReferredUsers = data?.referredUsers
+    ? flattenReferrals(data.referredUsers)
+    : [];
+
+  // 🧮 Calculate totals
+  const totalReferrals = allReferredUsers.length;
+  const totalTeamPoints = allReferredUsers.reduce(
+    (sum: number, user: any) => sum + (user.cachedClubsCount || 0) * 100,
     0
   );
+
+  // 🧠 Active users (those with nonzero club count)
+  const activeUsers = allReferredUsers.filter(
+    (u: User) => u.cachedClubsCount > 0
+  ).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
@@ -53,6 +55,7 @@ export default function Page() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+          {/* Total Referrals */}
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -69,6 +72,7 @@ export default function Page() {
             </CardContent>
           </Card>
 
+          {/* Active Users */}
           <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -76,12 +80,7 @@ export default function Page() {
                   <p className="text-purple-100 text-sm font-medium">
                     Active Users
                   </p>
-                  <p className="text-3xl font-bold mt-2">
-                    {
-                      referredUsers.filter((u: User) => u.cachedClubsCount > 0)
-                        .length
-                    }
-                  </p>
+                  <p className="text-3xl font-bold mt-2">{activeUsers}</p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full">
                   <UserCheck className="h-6 w-6" />
@@ -90,6 +89,7 @@ export default function Page() {
             </CardContent>
           </Card>
 
+          {/* Total Team Points */}
           <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -106,15 +106,17 @@ export default function Page() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg border-0">
+          {/* Rank + Badge */}
+          <Card className="bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-amber-100 text-sm font-medium">
-                    Your Rank
-                  </p>
+                  <p className="text-teal-100 text-sm font-medium">Your Rank</p>
                   <p className="text-3xl font-bold mt-2">
                     #{totalReferrals + 1}
+                  </p>
+                  <p className="text-sm mt-1 font-medium text-teal-50">
+                    {data?.badgeLevel || "None"}
                   </p>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full">
@@ -125,7 +127,7 @@ export default function Page() {
           </Card>
         </div>
 
-        {/* Main Content Card */}
+        {/* Main Content */}
         <Card className="shadow-xl border-0 mt-8 overflow-hidden">
           <CardContent className="p-0">
             {/* Header */}
@@ -140,7 +142,7 @@ export default function Page() {
                       Your Referred Users
                     </h2>
                     <p className="text-slate-300 text-xs">
-                      People who joined through your referral link
+                      Includes up to 4 referral levels
                     </p>
                   </div>
                 </div>
@@ -187,7 +189,7 @@ export default function Page() {
                 </div>
               )}
 
-              {!isLoading && referredUsers.length === 0 && (
+              {!isLoading && allReferredUsers.length === 0 && (
                 <div className="text-center py-12">
                   <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Users className="h-8 w-8 text-gray-400" />
@@ -202,93 +204,12 @@ export default function Page() {
                 </div>
               )}
 
-              {!isLoading && referredUsers.length > 0 && (
-                <div className="rounded-lg border border-gray-200 overflow-hidden">
-                  <Table>
-                    <TableHeader className="bg-gray-50/80">
-                      <TableRow className="hover:bg-gray-50/80">
-                        <TableHead className="font-semibold text-gray-700 py-4">
-                          <div className="flex items-center space-x-2 text-xs">
-                            <span>#</span>
-                            <span>ID</span>
-                          </div>
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700 py-4 text-xs">
-                          User Details
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700 py-4 text-xs">
-                          Points
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700 py-4 text-xs">
-                          Badge
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700 py-4 text-right text-xs">
-                          Status
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {referredUsers.map((user: User, index: number) => (
-                        <TableRow
-                          key={user.id}
-                          className="hover:bg-gray-50/50 transition-colors border-b text-xs border-gray-100 last:border-b-0"
-                        >
-                          <TableCell className="py-4 text-xs">
-                            <div className="flex  items-center space-x-3">
-                              {user?.cachedClubsCount > 0 ? (
-                                <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full">
-                                  <Star className="h-3 w-3 text-white fill-white" />
-                                </div>
-                              ) : (
-                                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                              )}
-                              <span className="font-medium text-gray-600">
-                                {user?.serialNumber}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex flex-col md:flex-row items-center space-x-3 text-xs">
-                              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                {user.name?.charAt(0) || "U"}
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  {user.name || "Anonymous User"}
-                                </p>
-
-                                <p className="text-xs text-gray-500">
-                                  Created:{" "}
-                                  {new Date(user?.createdAt).toDateString()}
-                                </p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="flex flex-col md:flex-row items-center space-x-3 text-xs">
-                              <p className="font-medium text-gray-900">
-                                {user.cachedClubsCount * 100 ||
-                                  "Anonymous User"}
-                              </p>
-                            </div>
-                          </TableCell>
-
-                          <TableCell className="py-4">
-                            <div className="flex flex-col md:flex-row items-center space-x-3 text-xs">
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  {user?.badgeLevel}
-                                </p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-4 text-right">
-                            {getStatusBadge(user?.cachedClubsCount)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+              {!isLoading && allReferredUsers.length > 0 && (
+                <div className="p-4">
+                  <h2 className="text-lg font-semibold mb-4">
+                    Referral Network
+                  </h2>
+                  <ReferralTree users={data.referredUsers || []} />
                 </div>
               )}
             </div>

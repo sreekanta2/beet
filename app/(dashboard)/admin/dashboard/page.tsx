@@ -51,6 +51,9 @@ export default function AdminPage() {
   const [openDialog, setOpenDialog] = useState<null | "deposit" | "withdraw">(
     null
   );
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10); // you can allow user to change later
+  const [total, setTotal] = useState(0);
 
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
@@ -62,14 +65,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [filterId]);
+  }, [filterId, page]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const data = await getAllUsers({ search: filterId });
-      setUsers(data?.data || []);
+      const data = await getAllUsers({ search: filterId, page, limit });
 
+      setUsers(data?.data || []);
+      setTotal(data?.pagination?.total || 0);
       if (data?.data) {
         const totalPoints = data.data.reduce(
           (sum: number, user: User) => sum + (user.deposit || 0),
@@ -127,7 +131,7 @@ export default function AdminPage() {
         });
 
         const data = await result.json();
-        console.log(data);
+
         if (data.success) {
           toast.success(`Deposited ${points} points to ${selectedUser.name}`);
           fetchUsers();
@@ -456,8 +460,52 @@ export default function AdminPage() {
                       </TableRow>
                     ))
                   )}
+                  {/* Pagination Controls */}
                 </TableBody>
               </Table>
+              {!loading && users.length > 0 && (
+                <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50/60">
+                  <p className="text-sm text-gray-600">
+                    Showing{" "}
+                    <span className="font-medium">
+                      {(page - 1) * limit + 1}
+                    </span>
+                    –
+                    <span className="font-medium">
+                      {Math.min(page * limit, total)}
+                    </span>{" "}
+                    of <span className="font-medium">{total}</span> users
+                  </p>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                      disabled={page === 1}
+                      className="gap-1"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                      Prev
+                    </Button>
+                    <span className="text-sm font-medium text-gray-700 px-2">
+                      Page {page}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setPage((p) => (p * limit < total ? p + 1 : p))
+                      }
+                      disabled={page * limit >= total}
+                      className="gap-1"
+                    >
+                      Next
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
