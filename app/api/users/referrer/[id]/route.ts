@@ -9,6 +9,10 @@ export async function GET(
 
   try {
     // 🧩 Fetch user referral tree up to 4 levels
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { badgeLevel: true },
+    });
     const referredUsers = await prisma.user.findMany({
       where: { referredById: id },
       select: {
@@ -58,7 +62,7 @@ export async function GET(
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ referredUsers }, { status: 200 });
+    return NextResponse.json({ ...user, referredUsers }, { status: 200 });
   } catch (error) {
     console.error("Error fetching referral tree:", error);
     return NextResponse.json(

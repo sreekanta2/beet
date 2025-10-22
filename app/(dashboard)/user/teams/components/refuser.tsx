@@ -63,15 +63,15 @@ function ReferralNode({ user, level }: { user: ReferralUser; level: number }) {
               }`}
             />
           )}
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-xs">
             {user.name?.charAt(0).toUpperCase() || "U"}
           </div>
           <div>
-            <p className="font-semibold text-gray-900 dark:text-gray-100">
+            <p className="font-semibold text-gray-900 dark:text-gray-100 text-xs">
               {user.name || "Anonymous"}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Clubs: {user.cachedClubsCount ?? 0} | Badge: {user.badgeLevel}
+              Units: {user.cachedClubsCount ?? 0} | Badge: {user.badgeLevel}
             </p>
           </div>
         </div>

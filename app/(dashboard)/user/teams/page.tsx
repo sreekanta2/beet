@@ -3,13 +3,36 @@
 import Breadcrumb from "@/components/breadcumb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { User } from "@prisma/client";
+import { BadgeLevel, User } from "@prisma/client";
 import { Coins, Loader2, Trophy, UserCheck, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import ReferralTree from "./components/refuser";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+function getBadgeLabel(level: string) {
+  switch (level) {
+    case "NONE":
+      return "No Badge";
+    case "SILVER":
+      return "Silver Member";
+    case "GOLDEN":
+      return "Gold Member";
+    case "PLATINUM":
+      return "Platinum Member";
+    case "DIAMOND":
+      return "Diamond Member";
+    default:
+      return "Unknown";
+  }
+}
+const badgeColors = {
+  NONE: "bg-gray-200 text-gray-600",
+  SILVER: "bg-gray-300 text-gray-700",
+  GOLDEN: "bg-yellow-400 text-yellow-900",
+  PLATINUM: "bg-blue-200 text-blue-800",
+  DIAMOND: "bg-cyan-300 text-cyan-900",
+};
 
 export default function Page() {
   const { data: session } = useSession();
@@ -47,7 +70,7 @@ export default function Page() {
   const activeUsers = allReferredUsers.filter(
     (u: User) => u.cachedClubsCount > 0
   ).length;
-
+  console.log(data);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
@@ -115,9 +138,13 @@ export default function Page() {
                   <p className="text-3xl font-bold mt-2">
                     #{totalReferrals + 1}
                   </p>
-                  <p className="text-sm mt-1 font-medium text-teal-50">
-                    {data?.badgeLevel || "None"}
-                  </p>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      badgeColors[data?.badgeLevel as BadgeLevel]
+                    }`}
+                  >
+                    {getBadgeLabel(data?.badgeLevel)}
+                  </span>
                 </div>
                 <div className="p-3 bg-white/20 rounded-full">
                   <Trophy className="h-6 w-6" />
