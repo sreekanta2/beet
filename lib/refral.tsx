@@ -1,11 +1,17 @@
 import prisma from "@/lib/db";
+import { Prisma, TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+// ---------------- Configuration ----------------
 const BONUS_MULTIPLIER = 200;
 const MAX_BONUS_STEPS = 13;
 const MAX_CLUBS = 50;
 const CLUB_COST = 100;
+const REFERRAL_CLUB_INCOME = [40, 20, 10, 5];
 
+// ---------------- Helper Functions ----------------
+
+// Generate geometric bonus series (for club bonuses)
 function generateClubSeries(start: number): number[] {
   const series: number[] = [];
   let value = start;
@@ -16,19 +22,80 @@ function generateClubSeries(start: number): number[] {
   return series;
 }
 
+// ✅ Handle referral bonuses for each new club created
+async function giveReferralClubBonus(
+  tx: Prisma.TransactionClient,
+  clubOwnerId: string,
+  clubId: string
+) {
+  const referrerIds: string[] = [];
+  let currentId = clubOwnerId;
+
+  // 🔁 Collect up to 4-level referrer chain
+  for (let i = 0; i < REFERRAL_CLUB_INCOME.length; i++) {
+    const user = await tx.user.findUnique({
+      where: { id: currentId },
+      select: { referredById: true },
+    });
+
+    if (!user?.referredById) break;
+    referrerIds.push(user.referredById);
+    currentId = user.referredById;
+  }
+
+  // 🎁 Distribute referral bonuses
+  for (let i = 0; i < referrerIds.length; i++) {
+    const refId = referrerIds[i];
+    const amount = REFERRAL_CLUB_INCOME[i];
+
+    // Prevent double-payment for same club
+    const exists = await tx.pointTransaction.findFirst({
+      where: {
+        userId: refId,
+        type: TransactionType.REFERRAL_CLUB_INCOME,
+        meta: { path: ["clubId"], equals: clubId },
+      },
+    });
+
+    if (exists) continue;
+
+    // 💸 Create transaction
+    await tx.pointTransaction.create({
+      data: {
+        userId: refId,
+        amount,
+        type: TransactionType.REFERRAL_CLUB_INCOME,
+        meta: { clubId, clubOwnerId, level: i + 1 },
+      },
+    });
+
+    // 💵 Update balances
+    await tx.user.update({
+      where: { id: refId },
+      data: {
+        totalBalance: { increment: amount },
+        teamIncome: { increment: amount },
+      },
+    });
+
+    console.log(`🎯 Level ${i + 1} referral bonus ${amount} → ${refId}`);
+  }
+}
+
+// ---------------- Main Function ----------------
 export async function processPointsAndClubs(userId: string, earned: number) {
   return prisma.$transaction(async (tx) => {
-    // 1️⃣ Credit earned points
+    // 1️⃣ Create transaction for earned points
     await tx.pointTransaction.create({
       data: {
         userId,
         amount: earned,
-        type: "CLUB_CREATION_SPEND",
+        type: TransactionType.CLUB_CREATION_SPEND,
         meta: { source: "deposit" },
       },
     });
 
-    // 2️⃣ Add earned points to user deposit
+    // 2️⃣ Update user deposit balance
     const user = await tx.user.update({
       where: { id: userId },
       data: { deposit: { increment: earned } },
@@ -42,11 +109,12 @@ export async function processPointsAndClubs(userId: string, earned: number) {
       return NextResponse.json({ error: "Limit the clubs." }, { status: 400 });
     }
 
+    // 3️⃣ Determine how many clubs to create
     const possibleClubs = Math.floor(deposit / CLUB_COST);
     const clubsToCreate = Math.min(possibleClubs, remainingSlots);
     if (clubsToCreate <= 0) return;
 
-    // 3️⃣ Find next serial number
+    // 4️⃣ Find next serial number
     const lastClub = await tx.club.findFirst({
       orderBy: { serialNumber: "desc" },
       select: { serialNumber: true },
@@ -56,7 +124,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
       ? lastClub.serialNumber + 1
       : 1;
 
-    // 4️⃣ Create new clubs
+    // 5️⃣ Create new clubs
     const newClubsData = Array.from({ length: clubsToCreate }, (_, i) => ({
       ownerId: userId,
       source: "AUTO",
@@ -67,7 +135,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
       data: newClubsData,
     });
 
-    // 5️⃣ Update user’s deposit and count
+    // 6️⃣ Update user’s deposit and cached club count
     await tx.user.update({
       where: { id: userId },
       data: {
@@ -76,7 +144,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
       },
     });
 
-    // 6️⃣ After creation, get all clubs again
+    // 7️⃣ Re-fetch all clubs
     const allClubs = await tx.club.findMany({
       where: { ownerId: userId },
       select: { id: true, serialNumber: true },
@@ -85,7 +153,7 @@ export async function processPointsAndClubs(userId: string, earned: number) {
     const totalClubs = allClubs.length;
     let totalNewBonus = 0;
 
-    // ✅ Step 1: Generate new bonuses for new clubs
+    // 8️⃣ Generate Club Bonuses
     for (const club of createdClubs) {
       const pattern = generateClubSeries(club.serialNumber).slice(1);
       const validPattern = pattern
@@ -101,36 +169,14 @@ export async function processPointsAndClubs(userId: string, earned: number) {
 
       await tx.clubsBonus.createMany({ data: bonuses });
       totalNewBonus += bonuses.reduce((sum, b) => sum + b.amount, 0);
-    }
 
-    for (const club of allClubs) {
-      const pattern = generateClubSeries(club.serialNumber).slice(1);
-      const validPattern = pattern
-        .filter((n) => n <= totalClubs)
-        .slice(0, MAX_BONUS_STEPS);
-
-      const existingCount = await tx.clubsBonus.count({
-        where: { clubId: club.id },
-      });
-
-      const newSteps = validPattern.length - existingCount;
-      if (newSteps > 0) {
-        for (let i = existingCount; i < validPattern.length; i++) {
-          const bonusAmount = BONUS_MULTIPLIER * Math.pow(2, i);
-          await tx.clubsBonus.create({
-            data: {
-              clubId: club.id,
-              userId,
-              amount: bonusAmount,
-              status: "Complete",
-            },
-          });
-          totalNewBonus += bonusAmount;
-        }
+      // 💎 Referral bonus for each new club
+      if (referredById) {
+        await giveReferralClubBonus(tx, userId, club.id);
       }
     }
 
-    // 7️⃣ Update total bonuses
+    // 9️⃣ Update total club bonus + balance
     if (totalNewBonus > 0) {
       await tx.user.update({
         where: { id: userId },
@@ -140,10 +186,9 @@ export async function processPointsAndClubs(userId: string, earned: number) {
         },
       });
     }
-    // await processReferralAndBadges(tx, userId, referredById);
 
     console.log(
-      `✅ User ${userId} earned ${earned} points, created ${clubsToCreate} new clubs, and received ${totalNewBonus} total bonus (including retroactive bonuses).`
+      `✅ User ${userId} earned ${earned} pts → created ${clubsToCreate} clubs → got ${totalNewBonus} bonus (incl. referrals)`
     );
   });
 }

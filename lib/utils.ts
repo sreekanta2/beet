@@ -186,6 +186,24 @@ export const fetcher = async (url: string) => {
   if (!res.ok) throw new Error("Failed to fetch data");
   return res.json();
 };
+export function getBangladeshNow(): Date {
+  const now = new Date();
+  const bdTime = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+  return bdTime;
+}
+// utils/dateUtils.ts
+export function diffInMsBD(lastUpdate: string | Date) {
+  // Convert both times to Bangladesh timezone
+  const bdNow = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+  );
+
+  const bdLast = new Date(
+    new Date(lastUpdate).toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+  );
+
+  return bdNow.getTime() - bdLast.getTime();
+}
 
 export const fetcherWithHeaders = (
   url: string,

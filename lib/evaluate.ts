@@ -29,6 +29,7 @@ export async function evaluateBadges(
       );
 
       if (qualifiedReferrals.length >= BATCH_SIZE) {
+        console.log("first");
         newBadge = "SILVER";
       }
     }
