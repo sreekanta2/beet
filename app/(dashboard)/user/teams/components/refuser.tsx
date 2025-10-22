@@ -1,4 +1,4 @@
-import { Badge, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 type ReferralUser = {
@@ -20,20 +20,7 @@ export default function ReferralTree({ users }: { users: ReferralUser[] }) {
     </div>
   );
 }
-const getStatusBadge = (index: number) => {
-  if (index === 0)
-    return (
-      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500">
-        New
-      </Badge>
-    );
-  if (index > 0)
-    return (
-      <Badge className="bg-gradient-to-r from-green-500 to-emerald-600">
-        Active
-      </Badge>
-    );
-};
+
 function ReferralNode({ user, level }: { user: ReferralUser; level: number }) {
   const [open, setOpen] = useState(false);
   const hasChildren = user.referrals && user.referrals.length > 0;
@@ -49,10 +36,10 @@ function ReferralNode({ user, level }: { user: ReferralUser; level: number }) {
     <div
       className={`ml-${(level - 1) * 4} border-l-2 ${
         levelColors[level - 1] || "border-l-gray-300"
-      } pl-4 py-2`}
+      } pl-2 py-2`}
     >
       <div
-        className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+        className="flex flex-col md:flex-row   justify-between bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
         onClick={() => setOpen(!open)}
       >
         <div className="flex items-center space-x-3">

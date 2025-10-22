@@ -232,7 +232,7 @@ export default function Page() {
               )}
 
               {!isLoading && allReferredUsers.length > 0 && (
-                <div className="p-4">
+                <div className="">
                   <h2 className="text-lg font-semibold mb-4">
                     Referral Network
                   </h2>
