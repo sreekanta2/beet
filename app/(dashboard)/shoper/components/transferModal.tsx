@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import { useEffect, useState } from "react";
 
@@ -22,6 +23,7 @@ interface UserInfo {
 }
 
 export default function DepositModal() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [sId, setSid] = useState("");
   const [amount, setAmount] = useState("");
@@ -106,7 +108,8 @@ export default function DepositModal() {
         setTimeout(() => {
           setOpen(false);
           setMessage(null);
-        }, 1500);
+          window.location.reload();
+        }, 500);
       }
     } catch (err) {
       console.error(err as unknown);

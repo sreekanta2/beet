@@ -56,13 +56,22 @@ export async function POST(req: Request) {
     // 🧮 Start a transaction for atomic updates
     const result = await prisma.$transaction(async (tx) => {
       // Deduct from sender
-      await tx.user.update({
+      const send = await tx.user.update({
         where: { id: userId },
         data: {
           totalBalance: { decrement: amount },
           teamIncome: { increment: amount * 0.02 },
         },
       });
+      if (send) {
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            totalBalance: { increment: amount * 0.02 },
+          },
+        });
+      }
+
       await tx.pointTransaction.create({
         data: {
           userId,

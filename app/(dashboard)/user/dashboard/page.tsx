@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetcher } from "@/lib/utils";
+import { BadgeLevel } from "@prisma/client";
 import {
   Banknote,
   Check,
@@ -47,7 +48,6 @@ export default function AccountDashboard() {
   const handleRoute = (url: string) => {
     router.push(url);
   };
-  console.log(data);
   // Generate referral URL
   const referralCode = data?.user?.referralCode || data?.user?.serialNumber;
   useEffect(() => {
@@ -162,7 +162,29 @@ export default function AccountDashboard() {
       action: () => setShareModalOpen(true),
     },
   ];
-
+  function getBadgeLabel(level: string) {
+    switch (level) {
+      case "NONE":
+        return "No Badge";
+      case "SILVER":
+        return "Silver Member";
+      case "GOLDEN":
+        return "Gold Member";
+      case "PLATINUM":
+        return "Platinum Member";
+      case "DIAMOND":
+        return "Diamond Member";
+      default:
+        return "Unknown";
+    }
+  }
+  const badgeColors = {
+    NONE: "bg-gray-200 text-gray-600",
+    SILVER: "bg-gray-300 text-gray-700",
+    GOLDEN: "bg-yellow-400 text-yellow-900",
+    PLATINUM: "bg-blue-200 text-blue-800",
+    DIAMOND: "bg-cyan-300 text-cyan-900",
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 font-sans">
       {/* Header Section */}
@@ -201,6 +223,15 @@ export default function AccountDashboard() {
                   <Coins className="w-3 h-3 mr-1" />
                   My Point: {data?.user?.deposit}
                 </Badge>
+
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    badgeColors[data?.user?.badgeLevel as BadgeLevel]
+                  }`}
+                >
+                  {getBadgeLabel(data?.user?.badgeLevel)}
+                </span>
+
                 {data?.user?.cachedClubsCount > 0 && (
                   <Button
                     onClick={() => handleRoute("/user/units")}
