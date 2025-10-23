@@ -143,8 +143,7 @@ export default function TransactionHistory() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
+
   const [exportLoading, setExportLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
@@ -158,8 +157,6 @@ export default function TransactionHistory() {
   });
   if (fromDate) query.append("from", fromDate);
   if (toDate) query.append("to", toDate);
-  if (searchTerm) query.append("search", searchTerm);
-  if (typeFilter !== "all") query.append("type", typeFilter);
 
   const url = session?.user?.id
     ? `/api/transections/${session.user.id}?${query.toString()}`
@@ -171,24 +168,12 @@ export default function TransactionHistory() {
   });
 
   const transactions = data?.transactions || [];
+  console.log(transactions);
   const pagination = data?.pagination || {
     total: 0,
     page: 1,
     totalPages: 0,
   };
-
-  const totalAmount = transactions.reduce(
-    (sum: number, t: any) => sum + t.amount,
-    0
-  );
-
-  const incomeAmount = transactions
-    .filter((t: any) => t.type === "income")
-    .reduce((sum: number, t: any) => sum + t.amount, 0);
-
-  const expenseAmount = transactions
-    .filter((t: any) => t.type === "withdrawal")
-    .reduce((sum: number, t: any) => sum + t.amount, 0);
 
   // 🔄 Enhanced Refresh Function
   const handleRefresh = async () => {
@@ -476,20 +461,20 @@ export default function TransactionHistory() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-gray-200 hover:bg-transparent">
-                    <TableHead className="font-semibold text-gray-700 text-center">
+                  <TableRow className="border-b border-gray-200 hover:bg-transparent text-xs">
+                    <TableHead className="font-semibold text-gray-700 text-center text-xs">
                       #
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700">
+                    <TableHead className="font-semibold text-gray-700 text-xs">
                       Customer ID
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-right">
+                    <TableHead className="font-semibold text-gray-700 text-right text-xs">
                       Amount
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center">
+                    <TableHead className="font-semibold text-gray-700 text-center text-xs">
                       Date & Time
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center">
+                    <TableHead className="font-semibold text-gray-700 text-center text-xs">
                       Type
                     </TableHead>
                   </TableRow>
@@ -546,22 +531,27 @@ export default function TransactionHistory() {
                   {transactions.map((tx: any, index: number) => (
                     <TableRow
                       key={tx.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150"
+                      className="border-b text-xs border-gray-100 hover:bg-gray-50 transition-colors duration-150"
                     >
-                      <TableCell className="text-center font-medium text-gray-900">
+                      <TableCell className="text-center font-medium text-gray-900 text-xs">
                         {(page - 1) * limit + index + 1}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs">
                         <div className="flex items-center gap-2">
                           <div className="bg-blue-100 p-1.5 rounded-lg">
                             <User className="w-3 h-3 text-blue-600" />
                           </div>
-                          <span className="font-medium">
-                            {tx?.user?.serialNumber}
-                          </span>
+                          <div className="w-full flex flex-col">
+                            <span className="font-medium text-xs">
+                              {tx?.clubOwnerName}
+                            </span>{" "}
+                            <span className="font-medium text-xs">
+                              ID: {tx?.clubOwnerSerial}
+                            </span>
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right text-xs">
                         {(() => {
                           // Define which types are income vs spend
                           const incomeTypes = [
@@ -588,7 +578,7 @@ export default function TransactionHistory() {
                             : "text-red-600";
 
                           return (
-                            <span className={`font-semibold ${color}`}>
+                            <span className={`font-semibold text-xs ${color}`}>
                               {sign}
                               {tx.amount}
                             </span>
@@ -597,8 +587,8 @@ export default function TransactionHistory() {
                       </TableCell>
 
                       <TableCell className="text-center text-gray-600">
-                        <div className="flex flex-col items-center">
-                          <span className="font-medium">
+                        <div className="flex flex-col items-center text-xs">
+                          <span className="font-medium text-xs">
                             {new Date(tx.createdAt).toLocaleDateString()}
                           </span>
                           <span className="text-xs text-gray-500">
@@ -613,7 +603,7 @@ export default function TransactionHistory() {
                           )}`}
                         >
                           {getTypeIcon(tx.type)}
-                          <span className="capitalize">{tx.type}</span>
+                          <span className="capitalize text-xs">{tx.type}</span>
                         </div>
                       </TableCell>
                     </TableRow>
