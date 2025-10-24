@@ -78,6 +78,9 @@ export default function WithdrawPage() {
                 <p className="text-xs text-gray-500">
                   Number: {w.mobileBankingService?.number || "N/A"}
                 </p>
+                <p className="text-xs text-gray-500">
+                  {new Date(w.createdAt).toLocaleString() || "N/A"}
+                </p>
               </div>
 
               <div className="flex items-center gap-2">

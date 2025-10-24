@@ -1,161 +1,3 @@
-// "use client";
-
-// import Breadcrumb from "@/components/breadcumb";
-// import { useSession } from "next-auth/react";
-// import { useEffect, useState } from "react";
-// import toast from "react-hot-toast";
-// import { z } from "zod";
-// import DeleteConfirmDialog from "./components/delete-confirmDialog";
-// import ServiceDialog from "./components/service-dialog";
-// import ServiceList from "./components/serviceList";
-// import StatsCards from "./components/starts-card";
-// import WithdrawDialog from "./components/withdrawDialog";
-
-// const serviceSchema = z.object({
-//   name: z.string().min(1, "Service name is required"),
-//   number: z
-//     .string()
-//     .min(10, "Phone number must be at least 10 digits")
-//     .max(15, "Phone number too long")
-//     .regex(/^[0-9]+$/, "Phone number must contain only digits"),
-// });
-
-// export interface BankService {
-//   id: number;
-//   name: string;
-//   number: string;
-//   user?: { totalBalance?: number };
-// }
-
-// export default function UpayPage() {
-//   const { data: session } = useSession();
-//   const userId = session?.user?.id;
-
-//   const [services, setServices] = useState<BankService[]>([]);
-//   const [loading, setLoading] = useState(false);
-
-//   const [dialogOpen, setDialogOpen] = useState(false);
-//   const [withdrawOpen, setWithdrawOpen] = useState(false);
-//   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
-
-//   const [editingService, setEditingService] = useState<BankService | null>(
-//     null
-//   );
-//   const [selectedService, setSelectedService] = useState<BankService | null>(
-//     null
-//   );
-
-//   const [form, setForm] = useState({ name: "", number: "" });
-//   const [errors, setErrors] = useState<{ name?: string; number?: string }>({});
-
-//   // 🔹 Fetch all services
-//   const fetchServices = async () => {
-//     if (!userId) return;
-//     const res = await fetch(`/api/mobile-banking?userId=${userId}`);
-//     const data = await res.json();
-//     setServices(data);
-//   };
-
-//   useEffect(() => {
-//     fetchServices();
-//   }, [userId]);
-
-//   // 🔹 Handle add/update
-//   const handleSubmit = async () => {
-//     setErrors({});
-//     const validation = serviceSchema.safeParse(form);
-//     if (!validation.success) {
-//       const fieldErrors: any = {};
-//       validation.error.errors.forEach(
-//         (err) => (fieldErrors[err.path[0]] = err.message)
-//       );
-//       setErrors(fieldErrors);
-//       return;
-//     }
-
-//     setLoading(true);
-//     const url = "/api/mobile-banking";
-//     const payload = { ...form, userId };
-
-//     try {
-//       const res = await fetch(url, {
-//         method: editingService ? "PATCH" : "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(
-//           editingService ? { ...payload, id: editingService.id } : payload
-//         ),
-//       });
-
-//       const data = await res.json();
-//       if (data.success) {
-//         toast.success("Service saved successfully");
-//         setDialogOpen(false);
-//         fetchServices();
-//       }
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // 🔹 Handle delete
-//   const handleDelete = async (id: number) => {
-//     setLoading(true);
-//     await fetch("/api/mobile-banking", {
-//       method: "DELETE",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ id }),
-//     });
-//     toast.success("Service deleted");
-//     setLoading(false);
-//     fetchServices();
-//     setDeleteConfirm(null);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6 flex flex-col items-center">
-//       <div className="w-full max-w-4xl">
-//         <Breadcrumb items={[{ label: "E-wallet" }]} />
-//         <StatsCards count={services.length} />
-
-//         <ServiceList
-//           services={services}
-//           openDialog={setDialogOpen}
-//           setEditingService={setEditingService}
-//           setDeleteConfirm={setDeleteConfirm}
-//           setWithdrawOpen={setWithdrawOpen}
-//           setSelectedService={setSelectedService}
-//         />
-
-//         <ServiceDialog
-//           open={dialogOpen}
-//           close={() => setDialogOpen(false)}
-//           form={form}
-//           setForm={setForm}
-//           errors={errors}
-//           handleSubmit={handleSubmit}
-//           loading={loading}
-//           editingService={editingService}
-//         />
-
-//         <WithdrawDialog
-//           open={withdrawOpen}
-//           close={() => setWithdrawOpen(false)}
-//           userId={userId!}
-//           serviceId={selectedService?.id!}
-//           onSuccess={fetchServices}
-//         />
-
-//         <DeleteConfirmDialog
-//           open={!!deleteConfirm}
-//           onCancel={() => setDeleteConfirm(null)}
-//           onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
-//           loading={loading}
-//         />
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import Breadcrumb from "@/components/breadcumb";
@@ -771,3 +613,159 @@ export default function UpayPage() {
     </div>
   );
 }
+
+// "use client";
+
+// import Breadcrumb from "@/components/breadcumb";
+// import { useSession } from "next-auth/react";
+// import { useEffect, useState } from "react";
+// import toast from "react-hot-toast";
+// import { z } from "zod";
+// import DeleteConfirmDialog from "./components/delete-confirmDialog";
+// import ServiceDialog from "./components/service-dialog";
+// import ServiceList from "./components/serviceList";
+// import StatsCards from "./components/starts-card";
+// import WithdrawOtp from "./components/withdrawDialog";
+
+// const serviceSchema = z.object({
+//   name: z.string().min(1, "Service name is required"),
+//   number: z
+//     .string()
+//     .min(10, "Phone number must be at least 10 digits")
+//     .max(15, "Phone number too long")
+//     .regex(/^[0-9]+$/, "Phone number must contain only digits"),
+// });
+
+// export interface BankService {
+//   id: number;
+//   name: string;
+//   number: string;
+//   user?: { totalBalance?: number };
+// }
+
+// export default function UpayPage() {
+//   const { data: session } = useSession();
+//   const userId = session?.user?.id;
+//   const [isLoginOpen, setIsLoginOpen] = useState(false);
+//   const [services, setServices] = useState<BankService[]>([]);
+//   const [loading, setLoading] = useState(false);
+
+//   const [dialogOpen, setDialogOpen] = useState(false);
+//   const [withdrawOpen, setWithdrawOpen] = useState(false);
+//   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+
+//   const [editingService, setEditingService] = useState<BankService | null>(
+//     null
+//   );
+//   const [selectedService, setSelectedService] = useState<BankService | null>(
+//     null
+//   );
+
+//   const [form, setForm] = useState({ name: "", number: "" });
+//   const [errors, setErrors] = useState<{ name?: string; number?: string }>({});
+
+//   // 🔹 Fetch all services
+//   const fetchServices = async () => {
+//     if (!userId) return;
+//     const res = await fetch(`/api/mobile-banking?userId=${userId}`);
+//     const data = await res.json();
+//     setServices(data);
+//   };
+
+//   useEffect(() => {
+//     fetchServices();
+//   }, [userId]);
+
+//   // 🔹 Handle add/update
+//   const handleSubmit = async () => {
+//     setErrors({});
+//     const validation = serviceSchema.safeParse(form);
+//     if (!validation.success) {
+//       const fieldErrors: any = {};
+//       validation.error.errors.forEach(
+//         (err) => (fieldErrors[err.path[0]] = err.message)
+//       );
+//       setErrors(fieldErrors);
+//       return;
+//     }
+
+//     setLoading(true);
+//     const url = "/api/mobile-banking";
+//     const payload = { ...form, userId };
+
+//     try {
+//       const res = await fetch(url, {
+//         method: editingService ? "PATCH" : "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(
+//           editingService ? { ...payload, id: editingService.id } : payload
+//         ),
+//       });
+
+//       const data = await res.json();
+//       if (data.success) {
+//         toast.success("Service saved successfully");
+//         setDialogOpen(false);
+//         fetchServices();
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // 🔹 Handle delete
+//   const handleDelete = async (id: number) => {
+//     setLoading(true);
+//     await fetch("/api/mobile-banking", {
+//       method: "DELETE",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ id }),
+//     });
+//     toast.success("Service deleted");
+//     setLoading(false);
+//     fetchServices();
+//     setDeleteConfirm(null);
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6 flex flex-col items-center">
+//       <div className="w-full max-w-4xl">
+//         <Breadcrumb items={[{ label: "E-wallet" }]} />
+//         <StatsCards count={services.length} />
+
+//         {!withdrawOpen ? (
+//           <>
+//             <ServiceList
+//               services={services}
+//               openDialog={setDialogOpen}
+//               setEditingService={setEditingService}
+//               setDeleteConfirm={setDeleteConfirm}
+//               setWithdrawOpen={setWithdrawOpen}
+//               setSelectedService={setSelectedService}
+//             />
+
+//             <ServiceDialog
+//               open={dialogOpen}
+//               close={() => setDialogOpen(false)}
+//               form={form}
+//               setForm={setForm}
+//               errors={errors}
+//               handleSubmit={handleSubmit}
+//               loading={loading}
+//               editingService={editingService}
+//             />
+//           </>
+//         ) : (
+//           <WithdrawOtp />
+//         )}
+
+//         <DeleteConfirmDialog
+//           open={!!deleteConfirm}
+//           onCancel={() => setDeleteConfirm(null)}
+//           onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
+//           loading={loading}
+//         />
+//       </div>
+//     </div>
+//   );
+// }

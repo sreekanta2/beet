@@ -13,7 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useSWR from "swr";
 import WithdrawButton from "./components/withdraw-button";
 
@@ -27,45 +27,56 @@ export default function PointsDashboard() {
   const { data: session } = useSession();
   const telephone = session?.user?.telephone;
 
+  // 🧩 SWR - fetch only once
   const { data, error, isLoading } = useSWR(
     telephone ? `/api/users/${telephone}` : null,
     fetcher,
-    { revalidateOnFocus: false }
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 0,
+      dedupingInterval: Infinity,
+    }
   );
-
+  console.log(data);
   const user = data?.user;
+  const recentWithdraws = data?.recentWithdraws;
 
-  const [liveClubIncome, setLiveClubIncome] = useState(0);
-  const [liveRoyaltyIncome, setLiveRoyaltyIncome] = useState(0);
-  const [liveTotalBalance, setLiveTotalBalance] = useState(0);
-
-  // ⏱️ Smooth per-second update
+  // 🪄 Smooth live income counter without React re-renders
   useEffect(() => {
     if (!user) return;
 
-    let currentClubIncome = user.clubsIncome + user.perSecondClubIncome;
-    let currentRoyaltyIncome = user.royaltyIncome + user.perSecondRoyaltyIncome;
-    let currentTotalBalance =
-      user.totalBalance +
-      user.perSecondClubIncome +
-      user.perSecondRoyaltyIncome;
+    const clubRef = { current: user.clubsIncome };
+    const royaltyRef = { current: user.royaltyIncome };
+    const balanceRef = { current: user.totalBalance };
 
-    setLiveClubIncome(currentClubIncome);
-    setLiveRoyaltyIncome(currentRoyaltyIncome);
-    setLiveTotalBalance(currentTotalBalance);
+    const clubRate = user.perSecondClubIncome;
+    const royaltyRate = user.perSecondRoyaltyIncome;
 
-    const interval = setInterval(() => {
-      currentClubIncome += user.perSecondClubIncome;
-      currentRoyaltyIncome += user.perSecondRoyaltyIncome;
-      currentTotalBalance +=
-        user.perSecondClubIncome + user.perSecondRoyaltyIncome;
+    const clubEl = document.getElementById("live-club-income");
+    const royaltyEl = document.getElementById("live-royalty-income");
+    const balanceEl = document.getElementById("live-total-balance");
 
-      setLiveClubIncome(currentClubIncome);
-      setLiveRoyaltyIncome(currentRoyaltyIncome);
-      setLiveTotalBalance(currentTotalBalance);
-    }, 1000);
+    let lastTime = performance.now();
 
-    return () => clearInterval(interval);
+    const update = (now: number) => {
+      const delta = (now - lastTime) / 1000; // seconds since last frame
+      lastTime = now;
+
+      clubRef.current += clubRate * delta;
+      royaltyRef.current += royaltyRate * delta;
+      balanceRef.current += (clubRate + royaltyRate) * delta;
+
+      if (clubEl) clubEl.textContent = clubRef.current.toFixed(6).toString();
+      if (royaltyEl)
+        royaltyEl.textContent = royaltyRef.current.toFixed(6).toString();
+      if (balanceEl)
+        balanceEl.textContent = balanceRef.current.toFixed(6).toString();
+
+      requestAnimationFrame(update);
+    };
+
+    requestAnimationFrame(update);
   }, [user]);
 
   if (error)
@@ -105,7 +116,7 @@ export default function PointsDashboard() {
             </p>
           </div>
 
-          {/* Club Income */}
+          {/* Club Income (Live) */}
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div className="bg-green-100 p-3 rounded-xl">
@@ -116,8 +127,11 @@ export default function PointsDashboard() {
             <h3 className="text-sm font-medium text-gray-600 mb-1">
               Units Income
             </h3>
-            <p className="text-2xl font-bold text-gray-900">
-              {liveClubIncome.toFixed(6)}
+            <p
+              id="live-club-income"
+              className="text-2xl font-bold text-gray-900"
+            >
+              {user?.clubsIncome.toFixed(6)}
             </p>
           </div>
 
@@ -148,8 +162,11 @@ export default function PointsDashboard() {
             <h3 className="text-sm font-medium text-gray-600 mb-1">
               Royalty Income
             </h3>
-            <p className="text-2xl font-bold text-gray-900">
-              {liveRoyaltyIncome.toFixed(6)}
+            <p
+              id="live-royalty-income"
+              className="text-2xl font-bold text-gray-900"
+            >
+              {user?.royaltyIncome.toFixed(6)}
             </p>
             <div className="text-xs text-gray-500 mt-2">Passive Earnings</div>
           </div>
@@ -228,10 +245,79 @@ export default function PointsDashboard() {
                 </div>
               </div>
             </div>
-            <div className="bg-gradient-to-r flex justify-between from-green-500 to-emerald-600 text-white p-5 rounded-xl">
+
+            {recentWithdraws && recentWithdraws.length > 0 && (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wide">
+                    Recent Withdrawals
+                  </h3>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-gray-500">Live</span>
+                  </div>
+                </div>
+
+                {/* Withdrawals List */}
+                <div className="space-y-3">
+                  {recentWithdraws.map((withdraw: any) => (
+                    <div
+                      key={withdraw.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-150 gap-2"
+                    >
+                      {/* Left Section - Service Info */}
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-semibold text-xs">
+                            {withdraw.mobileBankingService.name.charAt(0)}
+                          </span>
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2">
+                            <span className="text-xs font-medium text-gray-900 truncate">
+                              {withdraw.mobileBankingService.name}
+                            </span>
+                            <span className="text-xs w-fit text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full flex-shrink-0">
+                              {withdraw.mobileBankingService.number}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {new Date(withdraw.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Section - Status & Amount */}
+                      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                            withdraw.status === "COMPLETED"
+                              ? "bg-green-100 text-green-800"
+                              : withdraw.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : withdraw.status === "FAILED"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {withdraw.status}
+                        </span>
+                        <span className="text-xs font-bold text-gray-900 whitespace-nowrap">
+                          {withdraw.amount}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Live Total Balance */}
+            <div className="bg-gradient-to-r flex flex-col md:flex-row justify-between from-green-500 to-emerald-600 text-white p-5 rounded-xl">
               <h3 className="font-bold text-lg">Available Balance</h3>
-              <p className="text-2xl font-bold">
-                {liveTotalBalance.toFixed(6)}
+              <p id="live-total-balance" className="text-2xl font-bold">
+                {user?.totalBalance.toFixed(6)}
               </p>
             </div>
 

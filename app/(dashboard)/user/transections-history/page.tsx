@@ -168,7 +168,7 @@ export default function TransactionHistory() {
   });
 
   const transactions = data?.transactions || [];
-  console.log(transactions);
+
   const pagination = data?.pagination || {
     total: 0,
     page: 1,

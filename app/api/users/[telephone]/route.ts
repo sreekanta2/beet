@@ -55,6 +55,23 @@ export async function GET(
     });
 
     if (!user) throw new Error("User not found");
+    const recentWithdraws = await prisma.withdraw.findMany({
+      where: { user: { telephone } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        amount: true,
+        status: true,
+        createdAt: true,
+        mobileBankingService: {
+          select: {
+            name: true,
+            number: true,
+          },
+        },
+      },
+    });
     const result = await prisma.$transaction(async (tx) => {
       // 🧩 1️⃣ Get user & referral structure
 
@@ -135,8 +152,8 @@ export async function GET(
         },
       };
     });
-
-    return NextResponse.json(result);
+    const data = { ...result, recentWithdraws };
+    return NextResponse.json(data);
   } catch (error: any) {
     console.error("❌ Transaction Error:", error);
     return NextResponse.json(

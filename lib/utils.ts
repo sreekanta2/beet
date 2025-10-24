@@ -204,6 +204,12 @@ export function diffInMsBD(lastUpdate: string | Date) {
 
   return bdNow.getTime() - bdLast.getTime();
 }
+export function formatBangladeshPhone(phone: string): string {
+  let cleaned = phone.replace(/\D/g, ""); // remove *, -, spaces, etc.
+  if (cleaned.startsWith("880")) return `+${cleaned}`;
+  if (cleaned.startsWith("0")) return `+880${cleaned.slice(1)}`;
+  return `+${cleaned}`;
+}
 
 export const fetcherWithHeaders = (
   url: string,
