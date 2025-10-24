@@ -274,17 +274,17 @@ export default function PointsDashboard() {
                           </span>
                         </div>
 
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2">
+                        <div className="min-w-0  ">
+                          <div className="flex   xs:items-center gap-1 xs:gap-2">
                             <span className="text-xs font-medium text-gray-900 truncate">
                               {withdraw.mobileBankingService.name}
                             </span>
                             <span className="text-xs w-fit text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full flex-shrink-0">
                               {withdraw.mobileBankingService.number}
                             </span>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {new Date(withdraw.createdAt).toLocaleString()}
+                            <span className="text-xs text-gray-500 mt-0.5">
+                              {new Date(withdraw.createdAt).toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       </div>

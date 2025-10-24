@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { getBangladeshNow } from "@/lib/utils";
 import { TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -56,10 +57,9 @@ export async function POST(req: Request) {
           amount: finalAmount,
           type: TransactionType.TRANSFER_OUT,
           meta: {
-            note: `User withdrawal request (৳${amount} - ৳${feeAmount.toFixed(
-              2
-            )} fee)`,
+            clubOwnerId: userId,
           },
+          createdAt: getBangladeshNow(),
         },
       }),
       prisma.user.update({

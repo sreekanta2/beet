@@ -253,7 +253,7 @@ export default function TransactionHistory() {
         return "text-blue-600 bg-blue-50 border-blue-200";
     }
   };
-
+  console.log(data);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -476,20 +476,20 @@ export default function TransactionHistory() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-gray-200 hover:bg-transparent">
-                    <TableHead className="font-semibold text-gray-700 text-center">
+                  <TableRow className="border-b border-gray-200 hover:bg-transparent text-xs">
+                    <TableHead className="font-semibold text-gray-700 text-center text-xs">
                       #
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700">
+                    <TableHead className="font-semibold text-gray-700 text-xs">
                       Customer ID
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-right">
+                    <TableHead className="font-semibold text-gray-700 text-right text-xs">
                       Amount
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center">
+                    <TableHead className="font-semibold text-gray-700 text-center text-xs">
                       Date & Time
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center">
+                    <TableHead className="font-semibold text-gray-700 text-center text-xs">
                       Type
                     </TableHead>
                   </TableRow>
@@ -498,7 +498,10 @@ export default function TransactionHistory() {
                 <TableBody>
                   {isLoading && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-8 text-xs"
+                      >
                         <div className="flex flex-col items-center justify-center">
                           <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mb-2" />
                           <p className="text-gray-600">
@@ -548,17 +551,22 @@ export default function TransactionHistory() {
                       key={tx.id}
                       className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150"
                     >
-                      <TableCell className="text-center font-medium text-gray-900">
+                      <TableCell className="text-center font-medium text-gray-900 text-xs">
                         {(page - 1) * limit + index + 1}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-left text-xs">
                         <div className="flex items-center gap-2">
                           <div className="bg-blue-100 p-1.5 rounded-lg">
                             <User className="w-3 h-3 text-blue-600" />
                           </div>
-                          <span className="font-medium">
-                            {tx?.user?.serialNumber}
-                          </span>
+                          <div className="flex  flex-col">
+                            <span className="font-medium">
+                              Name: {tx?.clubOwnerName}
+                            </span>
+                            <span className="font-medium">
+                              ID: {tx?.clubOwnerSerial}
+                            </span>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -575,11 +583,6 @@ export default function TransactionHistory() {
                             "SHOPER_FEE_EARNED",
                           ];
 
-                          const spendTypes = [
-                            "CLUB_CREATION_SPEND",
-                            "TRANSFER_OUT",
-                          ];
-
                           // Determine if this transaction is income or spend
                           const isIncome = incomeTypes.includes(tx.type);
                           const sign = isIncome ? "+" : "-";
@@ -588,7 +591,7 @@ export default function TransactionHistory() {
                             : "text-red-600";
 
                           return (
-                            <span className={`font-semibold ${color}`}>
+                            <span className={`font-semibold text-xs ${color}`}>
                               {sign}
                               {tx.amount}
                             </span>
@@ -598,7 +601,7 @@ export default function TransactionHistory() {
 
                       <TableCell className="text-center text-gray-600">
                         <div className="flex flex-col items-center">
-                          <span className="font-medium">
+                          <span className="font-medium text-xs">
                             {new Date(tx.createdAt).toLocaleDateString()}
                           </span>
                           <span className="text-xs text-gray-500">

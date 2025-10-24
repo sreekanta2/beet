@@ -1,6 +1,7 @@
 import prisma from "@/lib/db";
 import { Prisma, TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { getBangladeshNow } from "./utils";
 
 // ---------------- Configuration ----------------
 const BONUS_MULTIPLIER = 200;
@@ -66,6 +67,7 @@ async function giveReferralClubBonus(
         amount,
         type: TransactionType.REFERRAL_CLUB_INCOME,
         meta: { clubId, clubOwnerId, level: i + 1 },
+        createdAt: getBangladeshNow(),
       },
     });
 
@@ -91,7 +93,8 @@ export async function processPointsAndClubs(userId: string, earned: number) {
         userId,
         amount: earned,
         type: TransactionType.CLUB_CREATION_SPEND,
-        meta: { source: "deposit" },
+        meta: { clubOwnerId: userId },
+        createdAt: getBangladeshNow(),
       },
     });
 

@@ -565,11 +565,6 @@ export default function TransactionHistory() {
                             "SHOPER_FEE_EARNED",
                           ];
 
-                          const spendTypes = [
-                            "CLUB_CREATION_SPEND",
-                            "TRANSFER_OUT",
-                          ];
-
                           // Determine if this transaction is income or spend
                           const isIncome = incomeTypes.includes(tx.type);
                           const sign = isIncome ? "+" : "-";

@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import { processPointsAndClubs } from "@/lib/refral";
+import { getBangladeshNow } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -77,7 +78,8 @@ export async function POST(req: Request) {
           userId,
           amount,
           type: "TRANSFER_OUT",
-          meta: { source: "deposit" },
+          meta: { clubOwnerId: receiver.id, source: "deposit" },
+          createdAt: getBangladeshNow(),
         },
       });
       if (receiver.role === "shoper") {
