@@ -137,7 +137,31 @@
 
 @layer components {
 }
+.easytech-easy-gradient {
+  /* This creates a metallic blue gradient */
+  background-image: linear-gradient(
+    180deg,
+    #3a7bf3 0%,
+    #3d6fd1 50%,
+    #3c6ccc 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* Makes the text transparent so the background shows through */
+}
 
+.easytech-tech-gradient {
+  /* This creates a metallic silver/gray gradient */
+  background-image: linear-gradient(
+    180deg,
+    #968c8c 0%,
+    #918585 50%,
+    #f1e9e9 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* Makes the text transparent so the background shows through */
+}
 .has-sticky-header {
   &::after {
     position: absolute;

@@ -2,6 +2,7 @@
 
 import { Home, Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -58,11 +59,19 @@ export default function Header() {
       <div className="bg-background">
         <div className="flex max-w-4xl mx-auto items-center justify-between py-4 px-4 md:px-0">
           <div
-            className="font-medium text-5xl md:text-4xl cursor-pointer"
+            className="font-medium text-5xl md:text-4xl flex gap-1 cursor-pointer"
             onClick={handleHomeClick}
           >
-            <span className="text-[#ff4800]">E</span>ASY
-            <span className="text-[#ff4800]">T</span>ECH
+            <Image
+              src="/images/logo2.png"
+              alt="Logo"
+              width={60}
+              height={60}
+              className=" "
+            />
+            <div className="bg-gradient-to-r from-cyan-400 to-indigo-600 font-bold bg-clip-text text-transparent">
+              EASYTECH
+            </div>
           </div>
 
           {/* Mobile Menu Toggle */}

@@ -1,4 +1,4 @@
-import Loader from "@/components/loader";
+import { Loader } from "@/components/loader";
 import { Suspense } from "react";
 import ShoperRegisterAccount from "./components/signup-form";
 
