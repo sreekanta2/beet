@@ -10,9 +10,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const HeroSlides = [
-  { src: "/images/businessworld.jpg", alt: "Hero 1" },
-  { src: "/images/easytect.jpg", alt: "Hero 2" },
-  { src: "/images/marketing.jpg", alt: "Hero 3" },
+  { src: "/images/profit.jpg", alt: "Hero 1" },
+  { src: "/images/discus.jpg", alt: "Hero 2" },
+  { src: "/images/outlet2.png", alt: "Hero 3" },
 ];
 
 function HeroCarousel() {
