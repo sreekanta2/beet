@@ -41,7 +41,7 @@ const ContactUs = () => {
                   href="tel:+8801911458398"
                   className="text-blue-600 hover:underline"
                 >
-                  +88017111560077
+                  +447411201995
                 </a>
               </p>
             </div>
