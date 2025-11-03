@@ -8,7 +8,7 @@ const BONUS_MULTIPLIER = 200;
 const MAX_BONUS_STEPS = 13;
 const MAX_CLUBS = 50;
 const CLUB_COST = 100;
-const REFERRAL_CLUB_INCOME = [40, 20, 10, 5];
+const REFERRAL_CLUB_INCOME = [40, 20, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
 
 // ---------------- Helper Functions ----------------
 
@@ -29,27 +29,20 @@ async function giveReferralClubBonus(
   clubOwnerId: string,
   clubId: string
 ) {
-  const referrerIds: string[] = [];
   let currentId = clubOwnerId;
 
-  // 🔁 Collect up to 4-level referrer chain
-  for (let i = 0; i < REFERRAL_CLUB_INCOME.length; i++) {
+  for (let level = 0; level < REFERRAL_CLUB_INCOME.length; level++) {
     const user = await tx.user.findUnique({
       where: { id: currentId },
       select: { referredById: true },
     });
 
-    if (!user?.referredById) break;
-    referrerIds.push(user.referredById);
-    currentId = user.referredById;
-  }
+    if (!user?.referredById) break; // stop if no more referrers
 
-  // 🎁 Distribute referral bonuses
-  for (let i = 0; i < referrerIds.length; i++) {
-    const refId = referrerIds[i];
-    const amount = REFERRAL_CLUB_INCOME[i];
+    const refId = user.referredById;
+    const amount = REFERRAL_CLUB_INCOME[level];
 
-    // Prevent double-payment for same club
+    // 🧾 Prevent double-payment for the same club
     const exists = await tx.pointTransaction.findFirst({
       where: {
         userId: refId,
@@ -58,7 +51,10 @@ async function giveReferralClubBonus(
       },
     });
 
-    if (exists) continue;
+    if (exists) {
+      currentId = refId;
+      continue;
+    }
 
     // 💸 Create transaction
     await tx.pointTransaction.create({
@@ -66,12 +62,12 @@ async function giveReferralClubBonus(
         userId: refId,
         amount,
         type: TransactionType.REFERRAL_CLUB_INCOME,
-        meta: { clubId, clubOwnerId, level: i + 1 },
+        meta: { clubId, clubOwnerId, level: level + 1 },
         createdAt: getBangladeshNow(),
       },
     });
 
-    // 💵 Update balances
+    // 💰 Update user balance
     await tx.user.update({
       where: { id: refId },
       data: {
@@ -80,10 +76,11 @@ async function giveReferralClubBonus(
       },
     });
 
-    console.log(`🎯 Level ${i + 1} referral bonus ${amount} → ${refId}`);
+    console.log(`🎯 Level ${level + 1} referral bonus ${amount} → ${refId}`);
+
+    currentId = refId; // move up the referral chain
   }
 }
-
 // ---------------- Main Function ----------------
 export async function processPointsAndClubs(userId: string, earned: number) {
   return prisma.$transaction(async (tx) => {
@@ -195,3 +192,63 @@ export async function processPointsAndClubs(userId: string, earned: number) {
     );
   });
 }
+
+// async function giveReferralClubBonus(
+//   tx: Prisma.TransactionClient,
+//   clubOwnerId: string,
+//   clubId: string
+// ) {
+//   const referrerIds: string[] = [];
+//   let currentId = clubOwnerId;
+
+//   // 🔁 Collect up to 4-level referrer chain
+//   for (let i = 0; i < REFERRAL_CLUB_INCOME.length; i++) {
+//     const user = await tx.user.findUnique({
+//       where: { id: currentId },
+//       select: { referredById: true },
+//     });
+
+//     if (!user?.referredById) break;
+//     referrerIds.push(user.referredById);
+//     currentId = user.referredById;
+//   }
+
+//   // 🎁 Distribute referral bonuses
+//   for (let i = 0; i < referrerIds.length; i++) {
+//     const refId = referrerIds[i];
+//     const amount = REFERRAL_CLUB_INCOME[i];
+
+//     // Prevent double-payment for same club
+//     const exists = await tx.pointTransaction.findFirst({
+//       where: {
+//         userId: refId,
+//         type: TransactionType.REFERRAL_CLUB_INCOME,
+//         meta: { path: ["clubId"], equals: clubId },
+//       },
+//     });
+
+//     if (exists) continue;
+
+//     // 💸 Create transaction
+//     await tx.pointTransaction.create({
+//       data: {
+//         userId: refId,
+//         amount,
+//         type: TransactionType.REFERRAL_CLUB_INCOME,
+//         meta: { clubId, clubOwnerId, level: i + 1 },
+//         createdAt: getBangladeshNow(),
+//       },
+//     });
+
+//     // 💵 Update balances
+//     await tx.user.update({
+//       where: { id: refId },
+//       data: {
+//         totalBalance: { increment: amount },
+//         teamIncome: { increment: amount },
+//       },
+//     });
+
+//     console.log(`🎯 Level ${i + 1} referral bonus ${amount} → ${refId}`);
+//   }
+// }
