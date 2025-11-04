@@ -19,13 +19,13 @@ export async function GET(request: NextRequest) {
     };
 
     const session = await getSession(request);
-    console.log(session?.telephone);
+
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const user = session as User;
-    console.log(user);
+
     if (!user) {
       return NextResponse.json({
         success: false,
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     const formattedPhone = formatBangladeshPhone(user.telephone!);
-    console.log(formattedPhone);
+
     // Send OTP
     const twillioResponse = await client.verify.v2
       .services(serviceId)

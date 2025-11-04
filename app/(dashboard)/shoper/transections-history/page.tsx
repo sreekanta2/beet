@@ -253,7 +253,7 @@ export default function TransactionHistory() {
         return "text-blue-600 bg-blue-50 border-blue-200";
     }
   };
-  console.log(data);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 font-sans">
       <div className="container mx-auto px-4 py-6 max-w-4xl">

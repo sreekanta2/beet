@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       calculationAmmount,
       agree,
     } = data;
-    console.log(data);
+
     if (!userId || !shopName)
       return NextResponse.json(
         { error: "userId and shopName are required." },

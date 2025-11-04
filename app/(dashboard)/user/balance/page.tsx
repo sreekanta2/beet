@@ -38,7 +38,7 @@ export default function PointsDashboard() {
       dedupingInterval: Infinity,
     }
   );
-  console.log(data);
+
   const user = data?.user;
   const recentWithdraws = data?.recentWithdraws;
 

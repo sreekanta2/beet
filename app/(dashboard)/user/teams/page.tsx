@@ -70,7 +70,7 @@ export default function Page() {
   const activeUsers = allReferredUsers.filter(
     (u: User) => u.cachedClubsCount > 0
   ).length;
-  console.log(data);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
